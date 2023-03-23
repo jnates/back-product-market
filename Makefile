@@ -34,6 +34,12 @@ code-format:
 mockery-install:
 	go install github.com/vektra/mockery/v2@latest
 
+
+generate-mocks:
+	mockery --all --recursive --case=underscore --output=./mocks
+
+.PHONY: generate-mocks
+
 .PHONY: build
 build:
 	go build ./...

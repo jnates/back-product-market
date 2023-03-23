@@ -1,0 +1,4 @@
+all: true
+recursive: true
+case: underscore
+output: ./mocks
