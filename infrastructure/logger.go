@@ -3,9 +3,10 @@ package infrastructure
 import (
 	"backend_crudgo/infrastructure/kit/enum"
 	"flag"
-	"github.com/joho/godotenv"
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -34,7 +35,7 @@ func InitLogger() {
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Error().Msgf("Error al cargar el archivo .env: %v", err)
+		log.Error().Msgf("Error loading file .env: %v", err)
 	}
 }
 

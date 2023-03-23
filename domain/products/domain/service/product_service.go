@@ -14,7 +14,8 @@ type productService struct {
 
 type ProductService interface {
 	CreateProductHandler(ctx context.Context, product *model.Product) (*response.ProductCreateResponse, error)
-	GetProductHandler(ctx context.Context, id string) (*response.ProductResponse, error)
+	GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error)
+	GetProductsHandler(ctx context.Context) (*response.GenericResponse, error)
 }
 
 func NewProductService(ProductRepository repository.ProductRepository) ProductService {
@@ -27,6 +28,10 @@ func (ps *productService) CreateProductHandler(ctx context.Context, product *mod
 	return ps.ProductRepository.CreateProductHandler(ctx, product)
 }
 
-func (ps *productService) GetProductHandler(ctx context.Context, id string) (*response.ProductResponse, error) {
+func (ps *productService) GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
 	return ps.ProductRepository.GetProductHandler(ctx, id)
+}
+
+func (ps *productService) GetProductsHandler(ctx context.Context) (*response.GenericResponse, error) {
+	return ps.ProductRepository.GetProductsHandler(ctx)
 }

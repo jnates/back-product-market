@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi"
+
 	"backend_crudgo/domain/products/domain/model"
 	"backend_crudgo/domain/products/domain/service"
 	"backend_crudgo/domain/products/infrastructure/persistence"
@@ -49,9 +51,33 @@ func (prod *ProductRouter) CreateProductHandler(w http.ResponseWriter, r *http.R
 // GetProductHandler Created initialize get product.
 func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
-	var id = r.URL.Query().Get(enum.Id)
+	var id = chi.URLParam(r, enum.Id)
 
 	productResponse, err := prod.Service.GetProductHandler(ctx, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonBytes, err := json.Marshal(productResponse)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(jsonBytes)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+func (prod *ProductRouter) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
+	var ctx = r.Context()
+
+	productResponse, err := prod.Service.GetProductsHandler(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

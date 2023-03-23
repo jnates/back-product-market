@@ -1,9 +1,9 @@
 package enum
 
 const (
-	BasePath    string = "/api/market"
-	App         string = "market"
-	HealthPath  string = "/health"
-	Id       = "id"
-	Location = "Location"
+	BasePath   string = "/api/market"
+	App        string = "market"
+	Id                = "id"
+	Location          = "Location"
+	HealthPath string = "/health"
 )
