@@ -8,7 +8,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
-// RoutesProducts aa
+// RoutesProducts creates a new router for handling product related requests.
+// The function takes a database connection as an argument and returns an HTTP handler.
 func RoutesProducts(conn *database.DataDB) http.Handler {
 	router := chi.NewRouter()
 	products := v1.NewProductHandler(conn) //domain
@@ -16,7 +17,8 @@ func RoutesProducts(conn *database.DataDB) http.Handler {
 	return router
 }
 
-// Router user
+// routesProduct creates a new router for handling product related requests.
+// The function takes a product handler as an argument and returns an HTTP handler.
 func routesProduct(handler *v1.ProductRouter) http.Handler {
 	router := chi.NewRouter()
 	router.Post("/", handler.CreateProductHandler)

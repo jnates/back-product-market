@@ -1,6 +1,7 @@
 package database
 
 import (
+	"backend_crudgo/infrastructure/kit/enum"
 	"database/sql"
 	"fmt"
 	"os"
@@ -26,12 +27,12 @@ type DataDB struct {
 }
 
 func getConnection() (*sql.DB, error) {
-	DbHost := os.Getenv("DB_HOST") //"127.0.0.1"
-	DbDriver := os.Getenv("DB_DRIVER")
-	DbUser := os.Getenv("DB_USER")
-	DbPassword := os.Getenv("DB_PASSWORD")
-	DbName := os.Getenv("DB_NAME")
-	DbPort := os.Getenv("DB_PORT")
+	DbHost := os.Getenv(enum.DBHost) //"127.0.0.1"
+	DbDriver := os.Getenv(enum.DBDriver)
+	DbUser := os.Getenv(enum.DBUser)
+	DbPassword := os.Getenv(enum.DBPassword)
+	DbName := os.Getenv(enum.DBName)
+	DbPort := os.Getenv(enum.DBPort)
 	uri := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
 
 	db, err := sql.Open(DbDriver, uri)

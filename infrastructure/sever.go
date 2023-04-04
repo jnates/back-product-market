@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"backend_crudgo/infrastructure/routes"
 	"context"
 	"net/http"
 	"os"
@@ -34,10 +35,10 @@ func newServer(port string, conn *database.DataDB) *Server {
 	router.Use(chiMiddleware.RealIP)
 	router.Use(chiMiddleware.Logger)
 	router.Use(chiMiddleware.Recoverer)
-	// router.Use(middleware.CORSMiddleware)
+	// router.Use(middlewares.CORSMiddleware)
 
 	//default path to be used in the health checker
-	router.Mount(enum.BasePath, RoutesProducts(conn))
+	router.Mount(enum.BasePath, infrastructure.RoutesProducts(conn))
 
 	s := &http.Server{
 		Addr:         ":" + port,

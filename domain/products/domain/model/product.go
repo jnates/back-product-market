@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-// Product type struct for database anime
+//Product type struct for database anime
 type Product struct {
 	ProductID          string    `json:"product_id,required"`
 	ProductName        string    `json:"product_name,omitempty"`

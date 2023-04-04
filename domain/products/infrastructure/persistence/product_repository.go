@@ -5,29 +5,30 @@ import (
 	repoDomain "backend_crudgo/domain/products/domain/repository"
 	"backend_crudgo/infrastructure/database"
 	response "backend_crudgo/types"
+
 	"context"
 	"database/sql"
 
 	"github.com/rs/zerolog/log"
 )
 
-type SqlProductRepo struct {
+type sqlProductRepo struct {
 	Conn *database.DataDB
 }
 
 // NewProductRepository Should initialize the dependencies for this service.
 func NewProductRepository(Conn *database.DataDB) repoDomain.ProductRepository {
-	return &SqlProductRepo{
+	return &sqlProductRepo{
 		Conn: Conn,
 	}
 }
 
-func (sr *SqlProductRepo) CreateProductHandler(ctx context.Context, product *model.Product) (*response.ProductCreateResponse, error) {
+func (sr *sqlProductRepo) CreateProductHandler(ctx context.Context, product *model.Product) (*response.CreateResponse, error) {
 	var idResult string
 
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, InsertProduct)
 	if err != nil {
-		return &response.ProductCreateResponse{}, err
+		return &response.CreateResponse{}, err
 	}
 
 	defer func() {
@@ -40,17 +41,17 @@ func (sr *SqlProductRepo) CreateProductHandler(ctx context.Context, product *mod
 	row := stmt.QueryRowContext(ctx, &product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductUserModify)
 	err = row.Scan(&idResult)
 	if err != sql.ErrNoRows {
-		return &response.ProductCreateResponse{}, err
+		return &response.CreateResponse{}, err
 	}
 
-	ProductResponse := response.ProductCreateResponse{
+	GenericResponse := response.CreateResponse{
 		Message: "Product created",
 	}
 
-	return &ProductResponse, nil
+	return &GenericResponse, nil
 }
 
-func (sr *SqlProductRepo) GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
+func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProduct)
 	if err != nil {
 		return &response.GenericResponse{}, err
@@ -72,15 +73,15 @@ func (sr *SqlProductRepo) GetProductHandler(ctx context.Context, id string) (*re
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
 
-	productResponse := &response.GenericResponse{
+	GenericResponse := &response.GenericResponse{
 		Message: "Get product success",
 		Product: product,
 	}
 
-	return productResponse, nil
+	return GenericResponse, nil
 }
 
-func (sr *SqlProductRepo) GetProductsHandler(ctx context.Context) (*response.GenericResponse, error) {
+func (sr *sqlProductRepo) GetProductsHandler(ctx context.Context) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProducts)
 	if err != nil {
 		return &response.GenericResponse{}, nil
@@ -105,10 +106,10 @@ func (sr *SqlProductRepo) GetProductsHandler(ctx context.Context) (*response.Gen
 	if err != nil {
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
-	productResponse := &response.GenericResponse{
+	GenericResponse := &response.GenericResponse{
 		Message: "Get product success",
 		Product: products,
 	}
 
-	return productResponse, nil
+	return GenericResponse, nil
 }
