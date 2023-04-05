@@ -27,7 +27,7 @@ func NewUserRepository(Conn *database.DataDB) repoDomain.UserRepository {
 	}
 }
 
-// CreateUserHandler creates a new user in the database.
+// CreateUser creates a new user in the database.
 func (sr *sqlUserRepo) CreateUser(ctx context.Context, user *model.User) (*response.CreateResponse, error) {
 	var idResult string
 
@@ -56,7 +56,7 @@ func (sr *sqlUserRepo) CreateUser(ctx context.Context, user *model.User) (*respo
 	}, nil
 }
 
-// LoginUserHandler logs in a user by checking if their password is correct.
+// LoginUser logs in a user by checking if their password is correct.
 func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectLoginUser)
 	if err != nil {
@@ -77,12 +77,14 @@ func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*respon
 		return &response.GenericUserResponse{Error: err.Error()}, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(currentUser.UserPassword), []byte(user.UserPassword))
-
-	if err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(currentUser.UserPassword), []byte(user.UserPassword)); err != nil {
 		return &response.GenericUserResponse{Error: "Password incorrect"}, nil
 	}
-	token, nil := generateToken(currentUser.UserID)
+	token, err := generateToken(currentUser.UserID)
+	if err != nil {
+		log.Error().Msgf("Could not generate token: [error] %s", err.Error())
+		return nil, err
+	}
 
 	return &response.GenericUserResponse{
 		Message: "Success",
@@ -90,7 +92,7 @@ func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*respon
 	}, nil
 }
 
-// GetUserHandler retrieves a specific user from the database.
+// GetUser retrieves a specific user from the database.
 func (sr *sqlUserRepo) GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectUser)
 	if err != nil {
@@ -117,7 +119,7 @@ func (sr *sqlUserRepo) GetUser(ctx context.Context, id string) (*response.Generi
 	}, nil
 }
 
-// GetUsersHandler retrieves a list of all users from the database.
+// GetUsers retrieves a list of all users from the database.
 func (sr *sqlUserRepo) GetUsers(ctx context.Context) (*response.GenericUserResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectUsers)
 	if err != nil {
