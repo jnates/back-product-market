@@ -3,7 +3,6 @@
 
 -- DROP TABLE public.type_identifiers;
 
-
 CREATE TABLE public.types_identifiers
 (
     type_id integer NOT NULL,
@@ -11,7 +10,7 @@ CREATE TABLE public.types_identifiers
     CONSTRAINT types_identifiers_pkey PRIMARY KEY (type_id)
 )
 
-TABLESPACE pg_default;
+    TABLESPACE pg_default;
 
 -- Sets the owner of the table to 'postgres'
 ALTER TABLE public.types_identifiers
@@ -30,7 +29,6 @@ COMMENT ON COLUMN public.types_identifiers.type_description
 
 -- DROP TABLE public.users;
 
-
 CREATE TABLE public.users
 (
     user_id integer NOT NULL,
@@ -46,7 +44,7 @@ CREATE TABLE public.users
         ON DELETE NO ACTION
 )
 
-TABLESPACE pg_default;
+    TABLESPACE pg_default;
 
 -- Sets the owner of the table to 'postgres'
 ALTER TABLE public.users
@@ -81,7 +79,6 @@ COMMENT ON COLUMN public.users.user_type_identifier
 
 -- DROP TABLE public.products;
 
-
 CREATE TABLE public.products
 (
     product_id integer NOT NULL,
@@ -90,7 +87,7 @@ CREATE TABLE public.products
     product_user_created integer NOT NULL,
     product_date_created timestamp(0) without time zone NOT NULL,
     product_user_modify integer NOT NULL,
-    "product_date_modify" timestamp(0) without time zone NOT NULL,
+    product_date_modify timestamp(0) without time zone NOT NULL,
     CONSTRAINT product_pkey PRIMARY KEY (product_id),
     CONSTRAINT fk_user_created FOREIGN KEY (product_user_created)
         REFERENCES public.users (user_id) MATCH SIMPLE
@@ -104,34 +101,11 @@ CREATE TABLE public.products
         NOT VALID
 )
 
-TABLESPACE pg_default;
+    TABLESPACE pg_default;
 
 -- Sets the owner of the table to 'postgres'
 ALTER TABLE public.products
     OWNER to postgres;
 
 -- Comments for the columns in the 'products' table
-ALTER TABLE public.products
-    OWNER to postgres;
-
-COMMENT ON COLUMN public.products.product_id
-    IS 'Product ID';
-
-COMMENT ON COLUMN public.products.product_name
-    IS 'Product name';
-
-COMMENT ON COLUMN public.products.product_amount
-    IS 'Product amount';
-
-COMMENT ON COLUMN public.products.product_user_created
-    IS 'User create a product';
-
-COMMENT ON COLUMN public.products.product_date_created
-    IS 'Date of product created';
-
-COMMENT ON COLUMN public.products.product_date_modify
-    IS 'Date of product modification';
-
-COMMENT ON COLUMN public.products."product_user_modify"
-    IS 'Date of user modification';
-    
+ALTER TABLE public
