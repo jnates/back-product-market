@@ -82,6 +82,7 @@ DB_NAME=back_anime
 DB_PORT=
 API_PORT=
 LOGGER_DEBUG=
+SECRET_KEY=
 ```
 
 ### Execute go build

@@ -52,7 +52,7 @@ func (prod *ProductRouter) CreateProductHandler(w http.ResponseWriter, r *http.R
 // GetProductHandler Created initialize get product.
 func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
-	var id = chi.URLParam(r, enum.Id)
+	var id = chi.URLParam(r, enum.ID)
 
 	productResponse, err := prod.Service.GetProductHandler(ctx, id)
 	if err != nil {
@@ -106,7 +106,7 @@ func (prod *ProductRouter) GetProductsHandler(w http.ResponseWriter, r *http.Req
 // UpdateProductHandler is the HTTP handler for updating a product. It receives an HTTP request with a JSON body containing the updated product information. It verifies the product ID and updates the product information through the product service. If the update is successful, it returns an HTTP response with a status code of 204 (No Content). If there is an error processing the request, it returns an appropriate HTTP error response.
 func (prod *ProductRouter) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
-	var id = chi.URLParam(r, enum.Id)
+	var id = chi.URLParam(r, enum.ID)
 
 	var product model.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
@@ -131,7 +131,7 @@ func (prod *ProductRouter) UpdateProductHandler(w http.ResponseWriter, r *http.R
 // DeleteProductHandler is the HTTP handler for deleting a product. It receives an HTTP request with the ID of the product to delete. It verifies the product ID and deletes the product through the product service. If the delete is successful, it returns an HTTP response with a status code of 204 (No Content). If there is an error processing the request, it returns an appropriate HTTP error response.
 func (prod *ProductRouter) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
-	var id = chi.URLParam(r, enum.Id)
+	var id = chi.URLParam(r, enum.ID)
 
 	response, err := prod.Service.DeleteProductHandler(ctx, id)
 	if err != nil {
