@@ -5,6 +5,7 @@ import (
 	repoDomain "backend_crudgo/domain/products/domain/repository"
 	"backend_crudgo/infrastructure/database"
 	response "backend_crudgo/types"
+	"errors"
 
 	"context"
 	"database/sql"
@@ -23,6 +24,9 @@ func NewProductRepository(Conn *database.DataDB) repoDomain.ProductRepository {
 	}
 }
 
+// CreateProductHandler takes in a context and a product as input and returns a CreateResponse and error.
+// It prepares an SQL statement to insert a product into the database and then executes the query.
+// If the query executes successfully, a success response is returned with a message "Product created".
 func (sr *sqlProductRepo) CreateProductHandler(ctx context.Context, product *model.Product) (*response.CreateResponse, error) {
 	var idResult string
 
@@ -43,19 +47,19 @@ func (sr *sqlProductRepo) CreateProductHandler(ctx context.Context, product *mod
 		return &response.CreateResponse{}, err
 	}
 
-	GenericResponse := response.CreateResponse{
+	return &response.CreateResponse{
 		Message: "Product created",
-	}
-
-	return &GenericResponse, nil
+	}, nil
 }
 
+// GetProductHandler takes in a context and an id as input and returns a GenericResponse and error.
+// It prepares an SQL statement to select a product from the database by its id and then executes the query.
+// If the query executes successfully, a success response is returned with the selected product.
 func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProduct)
 	if err != nil {
 		return &response.GenericResponse{}, err
 	}
-
 	defer func() {
 		if err = stmt.Close(); err != nil {
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
@@ -66,17 +70,22 @@ func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*re
 	product := &model.Product{}
 
 	if err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify); err != nil {
+		if err == sql.ErrNoRows {
+			return &response.GenericResponse{Error: "Product not found"}, errors.New(" Product not found ")
+		}
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
 
-	GenericResponse := &response.GenericResponse{
+	return &response.GenericResponse{
 		Message: "Get product success",
 		Product: product,
-	}
-
-	return GenericResponse, nil
+	}, nil
 }
 
+
+// GetProductsHandler takes in a context as input and returns a GenericResponse and error.
+// It prepares an SQL statement to select all products from the database and then executes the query.
+// If the query executes successfully, a success response is returned with a list of selected products.
 func (sr *sqlProductRepo) GetProductsHandler(ctx context.Context) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProducts)
 	if err != nil {
@@ -100,10 +109,57 @@ func (sr *sqlProductRepo) GetProductsHandler(ctx context.Context) (*response.Gen
 	if err != nil {
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
-	ProductResponse := &response.GenericResponse{
+
+	return &response.GenericResponse{
 		Message: "Get product success",
 		Product: products,
+	}, nil
+}
+
+// UpdateProductHandler takes in a context, an id and a product as input and returns a GenericResponse and error.
+// It prepares an SQL statement to update a product in the database and then executes the query.
+// If the query executes successfully, a success response is returned with a message "Product updated".
+func (sr *sqlProductRepo) UpdateProductHandler(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error) {
+	stmt, err := sr.Conn.DB.PrepareContext(ctx, UpdateProduct)
+	if err != nil {
+		return &response.GenericResponse{}, err
 	}
 
-	return ProductResponse, nil
+	defer func() {
+		if err = stmt.Close(); err != nil {
+			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
+		}
+	}()
+
+	if _, err = stmt.ExecContext(ctx, &product.ProductName, &product.ProductAmount, &product.ProductUserModify, id); err != nil {
+		return &response.GenericResponse{Error: err.Error()}, err
+	}
+
+	return &response.GenericResponse{
+		Message: "Product updated",
+	}, nil
+}
+
+// DeleteProductHandler takes in a context and an id as input and returns a GenericResponse and error.
+// It prepares an SQL statement to delete a product from the database by its id and then executes the query.
+// If the query executes successfully, a success response is returned with a message "Product deleted".
+func (sr *sqlProductRepo) DeleteProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
+	stmt, err := sr.Conn.DB.PrepareContext(ctx, DeleteProduct)
+	if err != nil {
+		return &response.GenericResponse{}, err
+	}
+
+	defer func() {
+		if err = stmt.Close(); err != nil {
+			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
+		}
+	}()
+
+	if _, err = stmt.ExecContext(ctx, id); err != nil {
+		return &response.GenericResponse{Error: err.Error()}, err
+	}
+
+	return &response.GenericResponse{
+		Message: "Product deleted",
+	}, nil
 }
