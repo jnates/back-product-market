@@ -32,15 +32,14 @@ func (sr *sqlProductRepo) CreateProductHandler(ctx context.Context, product *mod
 	}
 
 	defer func() {
-		err = stmt.Close()
-		if err != nil {
+		if err = stmt.Close(); err != nil {
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
 		}
 	}()
 
 	row := stmt.QueryRowContext(ctx, &product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductUserModify)
-	err = row.Scan(&idResult)
-	if err != sql.ErrNoRows {
+
+	if err = row.Scan(&idResult); err != sql.ErrNoRows {
 		return &response.CreateResponse{}, err
 	}
 
@@ -58,8 +57,7 @@ func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*re
 	}
 
 	defer func() {
-		err = stmt.Close()
-		if err != nil {
+		if err = stmt.Close(); err != nil {
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
 		}
 	}()
@@ -67,9 +65,7 @@ func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*re
 	row := stmt.QueryRowContext(ctx, id)
 	product := &model.Product{}
 
-	err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated,
-		&product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify)
-	if err != nil {
+	if err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify); err != nil {
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
 
@@ -88,8 +84,7 @@ func (sr *sqlProductRepo) GetProductsHandler(ctx context.Context) (*response.Gen
 	}
 
 	defer func() {
-		err = stmt.Close()
-		if err != nil {
+		if err = stmt.Close(); err != nil {
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
 		}
 	}()
@@ -98,18 +93,17 @@ func (sr *sqlProductRepo) GetProductsHandler(ctx context.Context) (*response.Gen
 	var products []*model.Product
 	for row.Next() {
 		var product = &model.Product{}
-		err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated,
-			&product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify)
+		err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify)
 
 		products = append(products, product)
 	}
 	if err != nil {
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
-	GenericResponse := &response.GenericResponse{
+	ProductResponse := &response.GenericResponse{
 		Message: "Get product success",
 		Product: products,
 	}
 
-	return GenericResponse, nil
+	return ProductResponse, nil
 }

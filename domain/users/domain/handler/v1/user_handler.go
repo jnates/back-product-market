@@ -13,7 +13,7 @@ import (
 	"backend_crudgo/infrastructure/database"
 )
 
-// UserRouter router
+// UserRouter is a struct that contains a UserService instance. It is used to create an HTTP router for user-related endpoints.
 type UserRouter struct {
 	Service service.UserService
 }
@@ -30,8 +30,7 @@ func (prod *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request
 	var user model.User
 	var ctx = r.Context()
 
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		_ = middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
 		return
 	}
@@ -46,13 +45,14 @@ func (prod *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request
 	_ = middlewares.JSON(w, r, http.StatusCreated, result)
 }
 
-// LoginUserHandler login a user.
+// LoginUserHandler is the HTTP handler for user login. It receives an HTTP request with a JSON body containing user credentials.
+// It verifies the user's authenticity through the user service and returns a JSON response containing user information and an authentication token upon success.
+// If there is an error processing the request, it returns an appropriate HTTP error response.
 func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
 	var ctx = r.Context()
 
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		_ = middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
 		return
 	}
@@ -72,13 +72,16 @@ func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(jsonBytes)
-	if err != nil {
+
+	if _, err = w.Write(jsonBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }
 
+// GetUsersHandler is the HTTP handler for retrieving users.
+// It calls the user service to retrieve the list of users and returns a JSON response containing the user information upon success.
+// If there is an error processing the request, it returns an appropriate HTTP error response.
 func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
 
@@ -96,8 +99,8 @@ func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(jsonBytes)
-	if err != nil {
+
+	if _, err = w.Write(jsonBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
