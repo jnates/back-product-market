@@ -11,7 +11,7 @@ import (
 // AuthMiddleware is a middleware function that validates a JSON Web Token (JWT) in an HTTP request.
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenString := r.Header.Get("Authorization")
+		tokenString := r.Header.Get(enum.Authorization)
 		if tokenString == enum.EmptyString {
 			http.Error(w, "Authorization token missing", http.StatusUnauthorized)
 			return

@@ -11,6 +11,7 @@ import (
 	"backend_crudgo/domain/products/infrastructure/persistence"
 	"backend_crudgo/infrastructure/database"
 	"backend_crudgo/infrastructure/middlewares"
+
 	"github.com/go-chi/chi"
 )
 
