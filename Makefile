@@ -24,9 +24,8 @@ lint-swag:
 .PHONY: swag
 swag:
 	swag init -g cmd/api/main.go --tags Enrollment,Health
-	cp ./docs/swagger.json ./docs/api-data-enrollment-openapi.json
-	cp ./docs/swagger.yaml ./docs/api-data-enrollment-openapi.yaml
-
+	copy .\docs\swagger.json .\docs\api-data-enrollment-openapi.json
+	copy .\docs\swagger.yaml .\docs\api-data-enrollment-openapi.yaml
 
 lint-install-apple-silicon:
 	brew install golangci-lint
