@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
