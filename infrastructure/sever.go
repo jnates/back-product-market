@@ -86,8 +86,7 @@ func Start(port string) {
 	}
 
 	defer func() {
-		err = db.DB.Close()
-		if err != nil {
+		if err = db.DB.Close(); err != nil {
 			log.Fatal().Msgf("Could not close BD : [error] %s", err.Error())
 		}
 	}()

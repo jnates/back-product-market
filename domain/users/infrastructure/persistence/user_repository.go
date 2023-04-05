@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -43,11 +42,12 @@ func (sr *sqlUserRepo) CreateUserHandler(ctx context.Context, user *model.User) 
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
 		}
 	}()
+
 	user.UserPassword = hashPassword(user.UserPassword)
 	row := stmt.QueryRowContext(ctx, &user.UserID, &user.Name, &user.UserIdentifier, &user.Email,
 		&user.UserPassword, &user.UserTypeIdentifier)
-	err = row.Scan(&idResult)
-	if err != sql.ErrNoRows {
+
+	if err = row.Scan(&idResult); err != sql.ErrNoRows {
 		return &response.CreateResponse{}, err
 	}
 
@@ -75,10 +75,7 @@ func (sr *sqlUserRepo) LoginUserHandler(ctx context.Context, user *model.User) (
 	row := stmt.QueryRowContext(ctx, user.Name)
 	currentUser := &model.User{}
 
-	err = row.Scan(&currentUser.UserID, &currentUser.Name, &currentUser.Email, &currentUser.UserIdentifier,
-		&currentUser.UserPassword, &currentUser.UserTypeIdentifier)
-
-	if err != nil {
+	if err = row.Scan(&currentUser.UserID, &currentUser.Name, &currentUser.Email, &currentUser.UserIdentifier, &currentUser.UserPassword, &currentUser.UserTypeIdentifier); err != nil {
 		return &response.GenericUserResponse{Error: err.Error()}, err
 	}
 
@@ -113,9 +110,7 @@ func (sr *sqlUserRepo) GetUserHandler(ctx context.Context, id string) (*response
 	row := stmt.QueryRowContext(ctx, id)
 	user := &model.User{}
 
-	err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword, &user.DateCreated,
-		&user.UserModify, &user.DateModify)
-	if err != nil {
+	if err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword, &user.DateCreated, &user.UserModify, &user.DateModify); err != nil {
 		return &response.GenericUserResponse{Error: err.Error()}, err
 	}
 
@@ -145,20 +140,18 @@ func (sr *sqlUserRepo) GetUsersHandler(ctx context.Context) (*response.GenericUs
 	var users []*model.User
 	for row.Next() {
 		var user = &model.User{}
-		err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword,
-			&user.DateCreated, &user.UserModify, &user.DateModify)
-
+		if err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword, &user.DateCreated, &user.UserModify, &user.DateModify); err != nil {
+			return &response.GenericUserResponse{Error: err.Error()}, err
+		}
 		users = append(users, user)
 	}
-	if err != nil {
-		return &response.GenericUserResponse{Error: err.Error()}, err
-	}
-	GenericUserResponse := &response.GenericUserResponse{
+
+	UserResponse := &response.GenericUserResponse{
 		Message: "Get user success",
 		User:    users,
 	}
 
-	return GenericUserResponse, nil
+	return UserResponse, nil
 }
 
 // hashPassword hashes a plain text password.

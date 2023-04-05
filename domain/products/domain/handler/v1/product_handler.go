@@ -67,8 +67,8 @@ func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Requ
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(jsonBytes)
-	if err != nil {
+
+	if _, err = w.Write(jsonBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -91,8 +91,8 @@ func (prod *ProductRouter) GetProductsHandler(w http.ResponseWriter, r *http.Req
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(jsonBytes)
-	if err != nil {
+
+	if _, err = w.Write(jsonBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
