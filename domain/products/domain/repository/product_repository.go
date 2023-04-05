@@ -9,7 +9,7 @@ import (
 
 // ProductRepository interfaces handlers products
 type ProductRepository interface {
-	CreateProductHandler(ctx context.Context, product *model.Product) (*response.ProductCreateResponse, error)
+	CreateProductHandler(ctx context.Context, product *model.Product) (*response.CreateResponse, error)
 	GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error)
 	GetProductsHandler(ctx context.Context) (*response.GenericResponse, error)
 }

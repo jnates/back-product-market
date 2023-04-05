@@ -10,6 +10,8 @@ import (
 	"backend_crudgo/infrastructure/database"
 	"backend_crudgo/infrastructure/kit/enum"
 
+	routes "backend_crudgo/infrastructure/routes"
+
 	"github.com/go-chi/chi"
 	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/rs/zerolog/log"
@@ -27,17 +29,13 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // newServer initialized a Routes Server with configuration.
 func newServer(port string, conn *database.DataDB) *Server {
-
 	router := chi.NewRouter()
-
 	router.Use(chiMiddleware.RequestID)
 	router.Use(chiMiddleware.RealIP)
 	router.Use(chiMiddleware.Logger)
 	router.Use(chiMiddleware.Recoverer)
-	// router.Use(middleware.CORSMiddleware)
-
-	//default path to be used in the health checker
-	router.Mount(enum.BasePath, RoutesProducts(conn))
+	router.Mount(enum.BasePath, routes.RoutesProducts(conn))
+	router.Mount(enum.BasePathUser, routes.RoutesUsers(conn))
 
 	s := &http.Server{
 		Addr:         ":" + port,
@@ -52,11 +50,9 @@ func newServer(port string, conn *database.DataDB) *Server {
 
 func (srv *Server) gracefulShutdown() {
 	quit := make(chan os.Signal, 1)
-
 	signal.Notify(quit, os.Interrupt)
 	sig := <-quit
 	log.Info().Msgf("CMD is shutting down %s", sig.String())
-
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -82,9 +78,8 @@ func (srv *Server) Start() {
 	srv.gracefulShutdown()
 }
 
-// Start aa
+// Start connection to the database.
 func Start(port string) {
-	// connection to the database.
 	db, err := database.New()
 	if err != nil {
 		return
@@ -98,6 +93,5 @@ func Start(port string) {
 	}()
 
 	server := newServer(port, db)
-	// start the server.
 	server.Start()
 }
