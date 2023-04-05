@@ -82,7 +82,6 @@ func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*re
 	}, nil
 }
 
-
 // GetProductsHandler takes in a context as input and returns a GenericResponse and error.
 // It prepares an SQL statement to select all products from the database and then executes the query.
 // If the query executes successfully, a success response is returned with a list of selected products.
