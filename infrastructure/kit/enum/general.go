@@ -5,7 +5,7 @@ const (
 	BasePathUser  string = "/api/market/users"
 	App           string = "market"
 	Authorization string = "Authorization"
-	Id            string = "id"
+	ID            string = "id"
 	Location      string = "Location"
 	EmptyString   string = ""
 )
