@@ -9,8 +9,8 @@ import (
 
 //UserRepository interfaces handlers users
 type UserRepository interface {
-	CreateUserHandler(ctx context.Context, user *model.User) (*response.CreateResponse, error)
-	GetUserHandler(ctx context.Context, id string) (*response.GenericUserResponse, error)
-	LoginUserHandler(ctx context.Context, user *model.User) (*response.GenericUserResponse, error)
-	GetUsersHandler(ctx context.Context) (*response.GenericUserResponse, error)
+	CreateUser(ctx context.Context, user *model.User) (*response.CreateResponse, error)
+	GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error)
+	LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error)
+	GetUsers(ctx context.Context) (*response.GenericUserResponse, error)
 }

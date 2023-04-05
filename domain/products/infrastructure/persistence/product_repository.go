@@ -27,7 +27,7 @@ func NewProductRepository(Conn *database.DataDB) repoDomain.ProductRepository {
 // CreateProductHandler takes in a context and a product as input and returns a CreateResponse and error.
 // It prepares an SQL statement to insert a product into the database and then executes the query.
 // If the query executes successfully, a success response is returned with a message "Product created".
-func (sr *sqlProductRepo) CreateProductHandler(ctx context.Context, product *model.Product) (*response.CreateResponse, error) {
+func (sr *sqlProductRepo) CreateProduct(ctx context.Context, product *model.Product) (*response.CreateResponse, error) {
 	var idResult string
 
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, InsertProduct)
@@ -55,7 +55,7 @@ func (sr *sqlProductRepo) CreateProductHandler(ctx context.Context, product *mod
 // GetProductHandler takes in a context and an id as input and returns a GenericResponse and error.
 // It prepares an SQL statement to select a product from the database by its id and then executes the query.
 // If the query executes successfully, a success response is returned with the selected product.
-func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
+func (sr *sqlProductRepo) GetProduct(ctx context.Context, id string) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProduct)
 	if err != nil {
 		return &response.GenericResponse{}, err
@@ -85,7 +85,7 @@ func (sr *sqlProductRepo) GetProductHandler(ctx context.Context, id string) (*re
 // GetProductsHandler takes in a context as input and returns a GenericResponse and error.
 // It prepares an SQL statement to select all products from the database and then executes the query.
 // If the query executes successfully, a success response is returned with a list of selected products.
-func (sr *sqlProductRepo) GetProductsHandler(ctx context.Context) (*response.GenericResponse, error) {
+func (sr *sqlProductRepo) GetProducts(ctx context.Context) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProducts)
 	if err != nil {
 		return &response.GenericResponse{}, nil
@@ -118,7 +118,7 @@ func (sr *sqlProductRepo) GetProductsHandler(ctx context.Context) (*response.Gen
 // UpdateProductHandler takes in a context, an id and a product as input and returns a GenericResponse and error.
 // It prepares an SQL statement to update a product in the database and then executes the query.
 // If the query executes successfully, a success response is returned with a message "Product updated".
-func (sr *sqlProductRepo) UpdateProductHandler(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error) {
+func (sr *sqlProductRepo) UpdateProduct(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, UpdateProduct)
 	if err != nil {
 		return &response.GenericResponse{}, err
@@ -142,7 +142,7 @@ func (sr *sqlProductRepo) UpdateProductHandler(ctx context.Context, id string, p
 // DeleteProductHandler takes in a context and an id as input and returns a GenericResponse and error.
 // It prepares an SQL statement to delete a product from the database by its id and then executes the query.
 // If the query executes successfully, a success response is returned with a message "Product deleted".
-func (sr *sqlProductRepo) DeleteProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
+func (sr *sqlProductRepo) DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, DeleteProduct)
 	if err != nil {
 		return &response.GenericResponse{}, err

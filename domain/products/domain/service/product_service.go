@@ -13,11 +13,11 @@ type productService struct {
 }
 
 type ProductService interface {
-	CreateProductHandler(ctx context.Context, product *model.Product) (*response.CreateResponse, error)
-	GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error)
-	GetProductsHandler(ctx context.Context) (*response.GenericResponse, error)
-	UpdateProductHandler(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error)
-	DeleteProductHandler(ctx context.Context, id string) (*response.GenericResponse, error)
+	CreateProduct(ctx context.Context, product *model.Product) (*response.CreateResponse, error)
+	GetProduct(ctx context.Context, id string) (*response.GenericResponse, error)
+	GetProducts(ctx context.Context) (*response.GenericResponse, error)
+	UpdateProduct(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error)
+	DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error)
 }
 
 func NewProductService(ProductRepository repository.ProductRepository) ProductService {
@@ -26,22 +26,22 @@ func NewProductService(ProductRepository repository.ProductRepository) ProductSe
 	}
 }
 
-func (ps *productService) CreateProductHandler(ctx context.Context, product *model.Product) (*response.CreateResponse, error) {
-	return ps.ProductRepository.CreateProductHandler(ctx, product)
+func (ps *productService) CreateProduct(ctx context.Context, product *model.Product) (*response.CreateResponse, error) {
+	return ps.ProductRepository.CreateProduct(ctx, product)
 }
 
-func (ps *productService) GetProductHandler(ctx context.Context, id string) (*response.GenericResponse, error) {
-	return ps.ProductRepository.GetProductHandler(ctx, id)
+func (ps *productService) GetProduct(ctx context.Context, id string) (*response.GenericResponse, error) {
+	return ps.ProductRepository.GetProduct(ctx, id)
 }
 
-func (ps *productService) GetProductsHandler(ctx context.Context) (*response.GenericResponse, error) {
-	return ps.ProductRepository.GetProductsHandler(ctx)
+func (ps *productService) GetProducts(ctx context.Context) (*response.GenericResponse, error) {
+	return ps.ProductRepository.GetProducts(ctx)
 }
 
-func (ps *productService) UpdateProductHandler(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error){
-	 return ps.ProductRepository.UpdateProductHandler(ctx, id, product)
+func (ps *productService) UpdateProduct(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error){
+	 return ps.ProductRepository.UpdateProduct(ctx, id, product)
 }
 
-func (ps *productService) DeleteProductHandler(ctx context.Context, id string) (*response.GenericResponse, error)  {
-	return ps.ProductRepository.DeleteProductHandler(ctx, id)
+func (ps *productService) DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error)  {
+	return ps.ProductRepository.DeleteProduct(ctx, id)
 }

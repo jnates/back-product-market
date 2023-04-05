@@ -35,7 +35,7 @@ func (prod *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	result, err := prod.Service.CreateUserHandler(ctx, &user)
+	result, err := prod.Service.CreateUser(ctx, &user)
 	if err != nil {
 		_ = middlewares.HTTPError(w, r, http.StatusConflict, "Conflict", err.Error())
 		return
@@ -57,7 +57,7 @@ func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userResponse, err := prod.Service.LoginUserHandler(ctx, &user)
+	userResponse, err := prod.Service.LoginUser(ctx, &user)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -85,7 +85,7 @@ func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request)
 func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
 
-	userResponse, err := prod.Service.GetUsersHandler(ctx)
+	userResponse, err := prod.Service.GetUsers(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

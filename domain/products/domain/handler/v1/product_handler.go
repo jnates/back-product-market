@@ -39,7 +39,7 @@ func (prod *ProductRouter) CreateProductHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	result, err := prod.Service.CreateProductHandler(ctx, &product)
+	result, err := prod.Service.CreateProduct(ctx, &product)
 	if err != nil {
 		_ = middlewares.HTTPError(w, r, http.StatusConflict, "Conflict", err.Error())
 		return
@@ -54,7 +54,7 @@ func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Requ
 	var ctx = r.Context()
 	var id = chi.URLParam(r, enum.ID)
 
-	productResponse, err := prod.Service.GetProductHandler(ctx, id)
+	productResponse, err := prod.Service.GetProduct(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			_ = middlewares.HTTPError(w, r, http.StatusNotFound, "Product not found", err.Error())
@@ -82,7 +82,7 @@ func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Requ
 func (prod *ProductRouter) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
 
-	productResponse, err := prod.Service.GetProductsHandler(ctx)
+	productResponse, err := prod.Service.GetProducts(ctx)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -114,7 +114,7 @@ func (prod *ProductRouter) UpdateProductHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	response, err := prod.Service.UpdateProductHandler(ctx, id, &product)
+	response, err := prod.Service.UpdateProduct(ctx, id, &product)
 	if err != nil {
 		_ = middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
 		return
@@ -133,7 +133,7 @@ func (prod *ProductRouter) DeleteProductHandler(w http.ResponseWriter, r *http.R
 	var ctx = r.Context()
 	var id = chi.URLParam(r, enum.ID)
 
-	response, err := prod.Service.DeleteProductHandler(ctx, id)
+	response, err := prod.Service.DeleteProduct(ctx, id)
 	if err != nil {
 		_ = middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
 		return

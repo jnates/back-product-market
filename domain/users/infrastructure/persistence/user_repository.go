@@ -28,7 +28,7 @@ func NewUserRepository(Conn *database.DataDB) repoDomain.UserRepository {
 }
 
 // CreateUserHandler creates a new user in the database.
-func (sr *sqlUserRepo) CreateUserHandler(ctx context.Context, user *model.User) (*response.CreateResponse, error) {
+func (sr *sqlUserRepo) CreateUser(ctx context.Context, user *model.User) (*response.CreateResponse, error) {
 	var idResult string
 
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, InsertUser)
@@ -57,7 +57,7 @@ func (sr *sqlUserRepo) CreateUserHandler(ctx context.Context, user *model.User) 
 }
 
 // LoginUserHandler logs in a user by checking if their password is correct.
-func (sr *sqlUserRepo) LoginUserHandler(ctx context.Context, user *model.User) (*response.GenericUserResponse, error) {
+func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectLoginUser)
 	if err != nil {
 		return &response.GenericUserResponse{}, err
@@ -91,7 +91,7 @@ func (sr *sqlUserRepo) LoginUserHandler(ctx context.Context, user *model.User) (
 }
 
 // GetUserHandler retrieves a specific user from the database.
-func (sr *sqlUserRepo) GetUserHandler(ctx context.Context, id string) (*response.GenericUserResponse, error) {
+func (sr *sqlUserRepo) GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectUser)
 	if err != nil {
 		return &response.GenericUserResponse{}, err
@@ -118,7 +118,7 @@ func (sr *sqlUserRepo) GetUserHandler(ctx context.Context, id string) (*response
 }
 
 // GetUsersHandler retrieves a list of all users from the database.
-func (sr *sqlUserRepo) GetUsersHandler(ctx context.Context) (*response.GenericUserResponse, error) {
+func (sr *sqlUserRepo) GetUsers(ctx context.Context) (*response.GenericUserResponse, error) {
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectUsers)
 	if err != nil {
 		return &response.GenericUserResponse{}, nil

@@ -13,10 +13,10 @@ type userService struct {
 }
 
 type UserService interface {
-	CreateUserHandler(ctx context.Context, user *model.User) (*response.CreateResponse, error)
-	LoginUserHandler(ctx context.Context, user *model.User) (*response.GenericUserResponse, error)
-	GetUserHandler(ctx context.Context, id string) (*response.GenericUserResponse, error)
-	GetUsersHandler(ctx context.Context) (*response.GenericUserResponse, error)
+	CreateUser(ctx context.Context, user *model.User) (*response.CreateResponse, error)
+	LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error)
+	GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error)
+	GetUsers(ctx context.Context) (*response.GenericUserResponse, error)
 }
 
 func NewUserService(UserRepository repository.UserRepository) UserService {
@@ -25,18 +25,18 @@ func NewUserService(UserRepository repository.UserRepository) UserService {
 	}
 }
 
-func (ps *userService) CreateUserHandler(ctx context.Context, user *model.User) (*response.CreateResponse, error) {
-	return ps.UserRepository.CreateUserHandler(ctx, user)
+func (ps *userService) CreateUser(ctx context.Context, user *model.User) (*response.CreateResponse, error) {
+	return ps.UserRepository.CreateUser(ctx, user)
 }
 
-func (ps *userService) GetUserHandler(ctx context.Context, id string) (*response.GenericUserResponse, error) {
-	return ps.UserRepository.GetUserHandler(ctx, id)
+func (ps *userService) GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error) {
+	return ps.UserRepository.GetUser(ctx, id)
 }
 
-func (ps *userService) LoginUserHandler(ctx context.Context, user *model.User) (*response.GenericUserResponse, error) {
-	return ps.UserRepository.LoginUserHandler(ctx, user)
+func (ps *userService) LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error) {
+	return ps.UserRepository.LoginUser(ctx, user)
 }
 
-func (ps *userService) GetUsersHandler(ctx context.Context) (*response.GenericUserResponse, error) {
-	return ps.UserRepository.GetUsersHandler(ctx)
+func (ps *userService) GetUsers(ctx context.Context) (*response.GenericUserResponse, error) {
+	return ps.UserRepository.GetUsers(ctx)
 }

@@ -18,6 +18,15 @@ lint:
 lint-install:
 	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.51.2
 
+lint-swag:
+	go install github.com/swaggo/swag/cmd/swag@latest
+
+.PHONY: swag
+swag:
+	swag init -g cmd/api/main.go --tags Enrollment,Health
+	cp ./docs/swagger.json ./docs/api-data-enrollment-openapi.json
+	cp ./docs/swagger.yaml ./docs/api-data-enrollment-openapi.yaml
+
 
 lint-install-apple-silicon:
 	brew install golangci-lint
