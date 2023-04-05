@@ -51,11 +51,9 @@ func (sr *sqlUserRepo) CreateUserHandler(ctx context.Context, user *model.User) 
 		return &response.CreateResponse{}, err
 	}
 
-	GenericUserResponse := response.CreateResponse{
+	return &response.CreateResponse{
 		Message: "User created",
-	}
-
-	return &GenericUserResponse, nil
+	}, nil
 }
 
 // LoginUserHandler logs in a user by checking if their password is correct.
@@ -85,12 +83,11 @@ func (sr *sqlUserRepo) LoginUserHandler(ctx context.Context, user *model.User) (
 		return &response.GenericUserResponse{Error: "Password incorrect"}, nil
 	}
 	token, nil := generateToken(currentUser.UserID)
-	GenericUserResponse := &response.GenericUserResponse{
+
+	return &response.GenericUserResponse{
 		Message: "Success",
 		User:    token,
-	}
-
-	return GenericUserResponse, nil
+	}, nil
 }
 
 // GetUserHandler retrieves a specific user from the database.
@@ -114,12 +111,10 @@ func (sr *sqlUserRepo) GetUserHandler(ctx context.Context, id string) (*response
 		return &response.GenericUserResponse{Error: err.Error()}, err
 	}
 
-	GenericUserResponse := &response.GenericUserResponse{
+	return &response.GenericUserResponse{
 		Message: "Get user success",
 		User:    user,
-	}
-
-	return GenericUserResponse, nil
+	}, nil
 }
 
 // GetUsersHandler retrieves a list of all users from the database.
@@ -146,12 +141,10 @@ func (sr *sqlUserRepo) GetUsersHandler(ctx context.Context) (*response.GenericUs
 		users = append(users, user)
 	}
 
-	UserResponse := &response.GenericUserResponse{
+	return &response.GenericUserResponse{
 		Message: "Get user success",
 		User:    users,
-	}
-
-	return UserResponse, nil
+	}, nil
 }
 
 // hashPassword hashes a plain text password.

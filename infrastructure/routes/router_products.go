@@ -26,5 +26,7 @@ func routesProduct(handler *v1.ProductRouter) http.Handler {
 	router.Post("/", handler.CreateProductHandler)
 	router.Get("/", handler.GetProductsHandler)
 	router.Get("/{id}", handler.GetProductHandler)
+	router.Put("/{id}", handler.UpdateProductHandler)
+	router.Delete("/{id}", handler.DeleteProductHandler)
 	return router
 }
