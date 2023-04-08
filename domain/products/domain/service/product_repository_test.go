@@ -12,6 +12,7 @@ import (
 )
 
 func TestCreateProduct(t *testing.T) {
+	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
 
@@ -29,14 +30,15 @@ func TestCreateProduct(t *testing.T) {
 	mockRepo.On("CreateProduct", context.Background(), product).Return(expectedResponse, nil)
 
 	res, err := productService.CreateProduct(context.Background(), product)
-	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, res)
+	assertions.NoError(err)
+	assertions.Equal(expectedResponse, res)
 	mockRepo.AssertExpectations(t)
 	mockRepo.AssertNumberOfCalls(t, "CreateProduct", 1)
 	mockRepo.AssertCalled(t, "CreateProduct", context.Background(), product)
 }
 
 func TestGetProductNotFound(t *testing.T) {
+	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
 
@@ -47,11 +49,12 @@ func TestGetProductNotFound(t *testing.T) {
 	mockRepo.On("GetProduct", context.Background(), "2").Return(expectedResponse, errors.New("Product not found"))
 
 	res, err := productService.GetProduct(context.Background(), "2")
-	assert.Error(t, err)
-	assert.Equal(t, expectedResponse, res)
+	assertions.Error(err)
+	assertions.Equal(expectedResponse, res)
 }
 
 func TestGetProduct(t *testing.T) {
+	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
 
@@ -70,11 +73,12 @@ func TestGetProduct(t *testing.T) {
 	mockRepo.On("GetProduct", context.Background(), "1").Return(expectedResponse, nil)
 
 	res, err := productService.GetProduct(context.Background(), "1")
-	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, res)
+	assertions.NoError(err)
+	assertions.Equal(expectedResponse, res)
 }
 
 func TestGetProducts(t *testing.T) {
+	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
 
@@ -100,11 +104,12 @@ func TestGetProducts(t *testing.T) {
 	mockRepo.On("GetProducts", context.Background()).Return(expectedResponse, nil)
 
 	res, err := productService.GetProducts(context.Background())
-	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, res)
+	assertions.NoError(err)
+	assertions.Equal(expectedResponse, res)
 }
 
 func TestUpdateProduct(t *testing.T) {
+	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
 
@@ -122,11 +127,12 @@ func TestUpdateProduct(t *testing.T) {
 	mockRepo.On("UpdateProduct", context.Background(), "1", product).Return(expectedResponse, nil)
 
 	res, err := productService.UpdateProduct(context.Background(), "1", product)
-	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, res)
+	assertions.NoError(err)
+	assertions.Equal(expectedResponse, res)
 }
 
 func TestDeleteProduct(t *testing.T) {
+	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
 
@@ -137,6 +143,6 @@ func TestDeleteProduct(t *testing.T) {
 	mockRepo.On("DeleteProduct", context.Background(), "1").Return(expectedResponse, nil)
 
 	res, err := productService.DeleteProduct(context.Background(), "1")
-	assert.NoError(t, err)
-	assert.Equal(t, expectedResponse, res)
+	assertions.NoError(err)
+	assertions.Equal(expectedResponse, res)
 }
