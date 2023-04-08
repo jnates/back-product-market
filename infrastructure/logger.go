@@ -44,7 +44,7 @@ func parseBool(boolString string) bool {
 	if err != nil {
 		log.Error().Msgf("Error in conversion: [error] %s", err)
 	} else {
-		log.Error().Msgf("Converted Boolean value - %s", boolVal)
+		log.Error().Msgf("Converted Boolean value - %t", boolVal)
 	}
 
 	return boolVal

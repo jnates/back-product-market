@@ -3,12 +3,9 @@ modd:
 	go mod download
 	go mod tidy
 
-.PHONY: go-test
-go-test:
-	go test -coverprofile=coverage.out -v ./...
-	go tool cover -func coverage.out
-
-go-test-report:
+.PHONY: coverage
+coverage:
+	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
 .PHONY: lint
@@ -20,12 +17,6 @@ lint-install:
 
 lint-swag:
 	go install github.com/swaggo/swag/cmd/swag@latest
-
-.PHONY: swag
-swag:
-	swag init -g cmd/api/main.go --tags Enrollment,Health
-	copy .\docs\swagger.json .\docs\api-data-enrollment-openapi.json
-	copy .\docs\swagger.yaml .\docs\api-data-enrollment-openapi.yaml
 
 lint-install-apple-silicon:
 	brew install golangci-lint
