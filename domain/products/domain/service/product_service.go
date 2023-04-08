@@ -38,10 +38,10 @@ func (ps *productService) GetProducts(ctx context.Context) (*response.GenericRes
 	return ps.ProductRepository.GetProducts(ctx)
 }
 
-func (ps *productService) UpdateProduct(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error){
-	 return ps.ProductRepository.UpdateProduct(ctx, id, product)
+func (ps *productService) UpdateProduct(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error) {
+	return ps.ProductRepository.UpdateProduct(ctx, id, product)
 }
 
-func (ps *productService) DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error)  {
+func (ps *productService) DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error) {
 	return ps.ProductRepository.DeleteProduct(ctx, id)
 }

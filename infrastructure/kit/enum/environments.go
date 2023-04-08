@@ -2,6 +2,7 @@ package enum
 
 const (
 	SecretKey  string = "SECRET_KEY"
+	APIPort    string = "API_PORT"
 	DBHost     string = "DB_HOST"
 	DBDriver   string = "DB_DRIVER"
 	DBUser     string = "DB_USER"

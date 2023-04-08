@@ -15,8 +15,6 @@ lint:
 lint-install:
 	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.51.2
 
-lint-swag:
-	go install github.com/swaggo/swag/cmd/swag@latest
 
 lint-install-apple-silicon:
 	brew install golangci-lint

@@ -99,7 +99,6 @@ func (prod *ProductRouter) UpdateProductHandler(w http.ResponseWriter, r *http.R
 	writeJSONResponseWithMarshalling(w, http.StatusOK, response)
 }
 
-
 // DeleteProductHandler is the HTTP handler for deleting a product. It receives an HTTP request with the ID of the product to delete. It verifies the product ID and deletes the product through the product service. If the delete is successful, it returns an HTTP response with a status code of 204 (No Content). If there is an error processing the request, it returns an appropriate HTTP error response.
 func (prod *ProductRouter) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()

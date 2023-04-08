@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 )
 
 type partialWriteErrorWriter struct {
@@ -70,23 +70,23 @@ func TestJSONError(t *testing.T) {
 		writer      http.ResponseWriter
 	}{
 		{
-			name:       "Should return UnsupportedTypeError when invalid data is provided",
-			statusCode: http.StatusOK,
-			data:       make(chan int),
+			name:        "Should return UnsupportedTypeError when invalid data is provided",
+			statusCode:  http.StatusOK,
+			data:        make(chan int),
 			expectedErr: &json.UnsupportedTypeError{},
 			writer:      httptest.NewRecorder(),
 		},
 		{
-			name:       "Should return error when writing response fails",
-			statusCode: http.StatusOK,
-			data:       "This is a test message",
+			name:        "Should return error when writing response fails",
+			statusCode:  http.StatusOK,
+			data:        "This is a test message",
 			expectedErr: fmt.Errorf(" Error writing response body: wrote 0 bytes out of 21"),
 			writer:      &errorWriter{ResponseWriter: httptest.NewRecorder()},
 		},
 		{
-			name:       "Should return error when partial write occurs",
-			statusCode: http.StatusOK,
-			data:       "This is a test message",
+			name:        "Should return error when partial write occurs",
+			statusCode:  http.StatusOK,
+			data:        "This is a test message",
 			expectedErr: fmt.Errorf(" Error writing response body: wrote 10 bytes out of 21"),
 			writer:      &partialWriteErrorWriter{ResponseWriter: httptest.NewRecorder(), n: 10},
 		},
@@ -107,7 +107,6 @@ func TestJSONError(t *testing.T) {
 	}
 }
 
-
 func (p *partialWriteErrorWriter) Write([]byte) (int, error) {
 	return p.n, nil
 }
@@ -115,7 +114,6 @@ func (p *partialWriteErrorWriter) Write([]byte) (int, error) {
 func (e *errorWriter) Write([]byte) (int, error) {
 	return 0, errors.New(" Error writing response ")
 }
-
 
 func TestHTTPError(t *testing.T) {
 	tests := []struct {
