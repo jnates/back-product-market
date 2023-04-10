@@ -41,7 +41,7 @@ func (sr *sqlProductRepo) CreateProduct(ctx context.Context, product *model.Prod
 		}
 	}()
 
-	row := stmt.QueryRowContext(ctx, &product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductUserModify)
+	row := stmt.QueryRowContext(ctx, &product.ProductID, &product.ProductName, &product.ProductAmount,&product.ProductPrice , &product.ProductUserCreated, &product.ProductUserModify)
 
 	if err = row.Scan(&idResult); err != sql.ErrNoRows {
 		return &response.CreateResponse{}, err
@@ -69,7 +69,8 @@ func (sr *sqlProductRepo) GetProduct(ctx context.Context, id string) (*response.
 	row := stmt.QueryRowContext(ctx, id)
 	product := &model.Product{}
 
-	if err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify); err != nil {
+	if err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductPrice,
+		&product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify); err != nil {
 		if err == sql.ErrNoRows {
 			return &response.GenericResponse{Error: "Product not found"}, errors.New(" Product not found ")
 		}
@@ -101,7 +102,8 @@ func (sr *sqlProductRepo) GetProducts(ctx context.Context) (*response.GenericRes
 	var products []*model.Product
 	for row.Next() {
 		var product = &model.Product{}
-		err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify)
+		err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductPrice,
+			&product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify)
 
 		products = append(products, product)
 	}
@@ -130,7 +132,7 @@ func (sr *sqlProductRepo) UpdateProduct(ctx context.Context, id string, product 
 		}
 	}()
 
-	if _, err = stmt.ExecContext(ctx, &product.ProductName, &product.ProductAmount, &product.ProductUserModify, id); err != nil {
+	if _, err = stmt.ExecContext(ctx, &product.ProductName, &product.ProductAmount, &product.ProductPrice, &product.ProductUserModify, id); err != nil {
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
 

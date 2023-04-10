@@ -1,0 +1,256 @@
+{
+	"info": {
+		"_postman_id": "269add07-db5c-4b89-9e19-cefe3ffeca00",
+		"name": "API-MARKET",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "USER REGISTER",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\":\"4\",\n    \"user_email\":\"ivan-salazar@gmail.com\",\n    \"user_name\": \"ivan\",\n    \"user_identifier\":\"1\",\n    \"user_password\":\"1234\",\n    \"user_type_identifier\":\"1\",\n    \"product_user_modify\":2\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/market/users/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"market",
+						"users",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "USER LOGIN",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"user_email\":\"nates1999123@gmail.com\",\n    \"user_name\": \"nates\",\n    \"user_password\":\"1234\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/market/users/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"market",
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CREATE",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA3NTQ2NTUsImlhdCI6MTY4MDY2ODI1NSwic3ViIjoiMyJ9.0zyTBdgio_gbSwlt5UZko-76tA_Bbu55FWIkiyCjivY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"product_id\": \"31\",\r\n    \"product_name\": \"Cabezonbujaja\",\r\n    \"product_amount\": 1,\r\n    \"product_user_created\": 1,\r\n    \"product_user_modify\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/market/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"market",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA3NTQ2NTUsImlhdCI6MTY4MDY2ODI1NSwic3ViIjoiMyJ9.0zyTBdgio_gbSwlt5UZko-76tA_Bbu55FWIkiyCjivY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"product_id\": \"31\",\r\n    \"product_name\": \"Cabezonbujaja\",\r\n    \"product_amount\": 1,\r\n    \"product_user_created\": 1,\r\n    \"product_user_modify\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/market/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"market",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA3NTQ2NTUsImlhdCI6MTY4MDY2ODI1NSwic3ViIjoiMyJ9.0zyTBdgio_gbSwlt5UZko-76tA_Bbu55FWIkiyCjivY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"product_id\": \"31\",\r\n    \"product_name\": \"Cabezonbujaja\",\r\n    \"product_amount\": 1,\r\n    \"product_user_created\": 1,\r\n    \"product_user_modify\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8081/api/market/products/31",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"market",
+						"products",
+						"31"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET of ID",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA3NTQ2NTUsImlhdCI6MTY4MDY2ODI1NSwic3ViIjoiMyJ9.0zyTBdgio_gbSwlt5UZko-76tA_Bbu55FWIkiyCjivY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/market/products/22",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"market",
+						"products",
+						"22"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET ALL",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODA3MjEyMjgsImlhdCI6MTY4MDYzNDgyOCwic3ViIjoiMyJ9.7JQd_kbHPVImiqrqm408Xb2iM_5-1UwgoS5N53gag_s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8081/api/market/products/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8081",
+					"path": [
+						"api",
+						"market",
+						"products",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

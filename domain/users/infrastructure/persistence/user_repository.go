@@ -44,7 +44,7 @@ func (sr *sqlUserRepo) CreateUser(ctx context.Context, user *model.User) (*respo
 	}()
 
 	user.UserPassword = hashPassword(user.UserPassword)
-	row := stmt.QueryRowContext(ctx, &user.UserID, &user.Name, &user.UserIdentifier, &user.Email,
+	row := stmt.QueryRowContext(ctx, &user.Name, &user.UserIdentifier, &user.Email,
 		&user.UserPassword, &user.UserTypeIdentifier)
 
 	if err = row.Scan(&idResult); err != sql.ErrNoRows {
