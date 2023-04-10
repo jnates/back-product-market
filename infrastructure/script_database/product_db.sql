@@ -260,8 +260,8 @@ COPY public.types_identifiers (type_id, type_description) FROM stdin;
 
 COPY public.users (user_name, user_identifier, user_email, user_password, user_type_identifier, user_id) FROM stdin;
 aaa	1	aaa@aa.com	$2a$10$FZB/RkDK1rRjnbubgI58UeVGNE6ZuEsjRHwHNZMnLCa5fYd/1mzny	1	3
-ivan	1	ivan-salazar@gmail.com	$2a$10$nPA4hNTB9jSx1Hr69eli5.Ln/LO1wB9hs7nlB8eAP/SmmedmI8bCi	1	4
-ivanandres	1	ivanssalazar14@gmail.com	$2a$10$XENQXIRCQ.JYlqXOW8ZpaezVLj8R5Dp0xEPyZbb4Dv7e9MGhAc7im	1	5
+juan	1	nates1999123@gmail.com	$2a$10$nPA4hNTB9jSx1Hr69eli5.Ln/LO1wB9hs7nlB8eAP/SmmedmI8bCi	1	4
+jnates	1	natesjd@gmail.com	$2a$10$XENQXIRCQ.JYlqXOW8ZpaezVLj8R5Dp0xEPyZbb4Dv7e9MGhAc7im	1	5
 
 
 --
