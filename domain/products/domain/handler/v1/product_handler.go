@@ -35,18 +35,18 @@ func (prod *ProductRouter) CreateProductHandler(w http.ResponseWriter, r *http.R
 
 	err := json.NewDecoder(r.Body).Decode(&product)
 	if err != nil {
-		_ = middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
+		middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
 		return
 	}
 
 	result, err := prod.Service.CreateProduct(ctx, &product)
 	if err != nil {
-		_ = middlewares.HTTPError(w, r, http.StatusConflict, "Conflict", err.Error())
+		middlewares.HTTPError(w, r, http.StatusConflict, "Conflict", err.Error())
 		return
 	}
 
 	w.Header().Add(enum.Location, fmt.Sprintf("%s%s", r.URL.String(), result))
-	_ = middlewares.JSON(w, r, http.StatusCreated, result)
+	middlewares.JSON(w, r, http.StatusCreated, result)
 }
 
 // GetProductHandler Created initialize get product.
@@ -57,10 +57,10 @@ func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Requ
 	productResponse, err := prod.Service.GetProduct(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			_ = middlewares.HTTPError(w, r, http.StatusNotFound, "Product not found", err.Error())
+			middlewares.HTTPError(w, r, http.StatusNotFound, "Product not found", err.Error())
 			return
 		}
-		_ = middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
+		middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
 		return
 	}
 
@@ -86,13 +86,13 @@ func (prod *ProductRouter) UpdateProductHandler(w http.ResponseWriter, r *http.R
 
 	var product model.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		_ = middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
+		middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
 		return
 	}
 
 	response, err := prod.Service.UpdateProduct(ctx, id, &product)
 	if err != nil {
-		_ = middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
+		middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
 		return
 	}
 

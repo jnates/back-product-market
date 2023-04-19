@@ -37,8 +37,7 @@ func (sr *sqlUserRepo) CreateUser(ctx context.Context, user *model.User) (*respo
 	}
 
 	defer func() {
-		err = stmt.Close()
-		if err != nil {
+		if err = stmt.Close(); err != nil {
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
 		}
 	}()
@@ -127,8 +126,7 @@ func (sr *sqlUserRepo) GetUsers(ctx context.Context) (*response.GenericUserRespo
 	}
 
 	defer func() {
-		err = stmt.Close()
-		if err != nil {
+		if err = stmt.Close();err != nil {
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
 		}
 	}()
