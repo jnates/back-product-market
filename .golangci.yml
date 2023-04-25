@@ -89,7 +89,6 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    #- deadcode
     - depguard
     - dogsled
     - errcheck
@@ -100,21 +99,17 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    # - golint
     - gomnd
     - goprintffuncname
-    # - gosec  cannot set gosec options https://github.com/golangci/golangci-lint/issues/177
     - gosimple
     - govet
     - ineffassign
-    # - interfacer
     - lll
     - misspell
     - nakedret
     - nolintlint
     - revive
     - rowserrcheck
-    # - scopelint
     - staticcheck
     - structcheck
     - stylecheck
@@ -122,7 +117,6 @@ linters:
     - unconvert
     - unparam
     - unused
-    #- varcheck
     - whitespace
 issues:
   # Excluding configuration per-path, per-linter, per-text and per-source

@@ -13,7 +13,7 @@ import (
 // The function takes a database connection as an argument and returns an HTTP handler.
 func RoutesProducts(conn *database.DataDB) http.Handler {
 	router := chi.NewRouter()
-	products := v1.NewProductHandler(conn) //domain
+	products := v1.NewProductHandler(conn) // domain.
 	router.Mount("/products", routesProduct(products))
 	return router
 }

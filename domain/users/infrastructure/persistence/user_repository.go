@@ -16,14 +16,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	time24 = 24
+)
+
 type sqlUserRepo struct {
 	Conn *database.DataDB
 }
 
 // NewUserRepository Should initialize the dependencies for this service.
-func NewUserRepository(Conn *database.DataDB) repoDomain.UserRepository {
+func NewUserRepository(conn *database.DataDB) repoDomain.UserRepository {
 	return &sqlUserRepo{
-		Conn: Conn,
+		Conn: conn,
 	}
 }
 
@@ -72,7 +76,8 @@ func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*respon
 	row := stmt.QueryRowContext(ctx, user.Name)
 	currentUser := &model.User{}
 
-	if err = row.Scan(&currentUser.UserID, &currentUser.Name, &currentUser.Email, &currentUser.UserIdentifier, &currentUser.UserPassword, &currentUser.UserTypeIdentifier); err != nil {
+	if err = row.Scan(&currentUser.UserID, &currentUser.Name, &currentUser.Email, &currentUser.UserIdentifier,
+		&currentUser.UserPassword, &currentUser.UserTypeIdentifier); err != nil {
 		return &response.GenericUserResponse{Error: err.Error()}, err
 	}
 
@@ -108,7 +113,8 @@ func (sr *sqlUserRepo) GetUser(ctx context.Context, id string) (*response.Generi
 	row := stmt.QueryRowContext(ctx, id)
 	user := &model.User{}
 
-	if err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword, &user.DateCreated, &user.UserModify, &user.DateModify); err != nil {
+	if err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword,
+		&user.DateCreated, &user.UserModify, &user.DateModify); err != nil {
 		return &response.GenericUserResponse{Error: err.Error()}, err
 	}
 
@@ -126,16 +132,20 @@ func (sr *sqlUserRepo) GetUsers(ctx context.Context) (*response.GenericUserRespo
 	}
 
 	defer func() {
-		if err = stmt.Close();err != nil {
+		if err = stmt.Close(); err != nil {
 			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
 		}
 	}()
 	row, err := sr.Conn.DB.QueryContext(ctx, SelectUsers)
+	if err != nil {
+		return &response.GenericUserResponse{}, nil
+	}
 
 	var users []*model.User
 	for row.Next() {
 		var user = &model.User{}
-		if err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword, &user.DateCreated, &user.UserModify, &user.DateModify); err != nil {
+		if err = row.Scan(&user.UserID, &user.Name, &user.Email, &user.UserIdentifier, &user.UserPassword,
+			&user.DateCreated, &user.UserModify, &user.DateModify); err != nil {
 			return &response.GenericUserResponse{Error: err.Error()}, err
 		}
 		users = append(users, user)
@@ -160,7 +170,7 @@ func hashPassword(password string) string {
 func generateToken(userID string) (string, error) {
 	claims := jwt.MapClaims{
 		"sub": userID,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"exp": time.Now().Add(time.Hour * time24).Unix(),
 		"iat": time.Now().Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

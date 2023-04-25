@@ -8,6 +8,7 @@ import (
 
 	"backend_crudgo/domain/products/domain/model"
 	response "backend_crudgo/types"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -114,10 +115,10 @@ func TestUpdateProduct(t *testing.T) {
 	productService := NewProductService(mockRepo)
 
 	product := &model.Product{
-		ProductID:          "1",
-		ProductName:        "Test Product",
-		ProductAmount:      20,
-		ProductUserModify:  2,
+		ProductID:         "1",
+		ProductName:       "Test Product",
+		ProductAmount:     20,
+		ProductUserModify: 2,
 	}
 
 	expectedResponse := &response.GenericResponse{

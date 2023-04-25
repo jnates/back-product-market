@@ -18,9 +18,9 @@ type sqlProductRepo struct {
 }
 
 // NewProductRepository Should initialize the dependencies for this service.
-func NewProductRepository(Conn *database.DataDB) repoDomain.ProductRepository {
+func NewProductRepository(conn *database.DataDB) repoDomain.ProductRepository {
 	return &sqlProductRepo{
-		Conn: Conn,
+		Conn: conn,
 	}
 }
 
@@ -41,7 +41,8 @@ func (sr *sqlProductRepo) CreateProduct(ctx context.Context, product *model.Prod
 		}
 	}()
 
-	row := stmt.QueryRowContext(ctx, &product.ProductID, &product.ProductName, &product.ProductAmount,&product.ProductPrice , &product.ProductUserCreated, &product.ProductUserModify)
+	row := stmt.QueryRowContext(ctx, &product.ProductID, &product.ProductName, &product.ProductAmount,
+		&product.ProductPrice, &product.ProductUserCreated, &product.ProductUserModify)
 
 	if err = row.Scan(&idResult); err != sql.ErrNoRows {
 		return &response.CreateResponse{}, err
@@ -98,6 +99,9 @@ func (sr *sqlProductRepo) GetProducts(ctx context.Context) (*response.GenericRes
 		}
 	}()
 	row, err := sr.Conn.DB.QueryContext(ctx, SelectProducts)
+	if err != nil {
+		return &response.GenericResponse{}, nil
+	}
 
 	var products []*model.Product
 	for row.Next() {
@@ -107,7 +111,7 @@ func (sr *sqlProductRepo) GetProducts(ctx context.Context) (*response.GenericRes
 
 		products = append(products, product)
 	}
-	if err != nil {
+	if err := row.Err(); err != nil {
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
 
@@ -132,7 +136,8 @@ func (sr *sqlProductRepo) UpdateProduct(ctx context.Context, id string, product 
 		}
 	}()
 
-	if _, err = stmt.ExecContext(ctx, &product.ProductName, &product.ProductAmount, &product.ProductPrice, &product.ProductUserModify, id); err != nil {
+	if _, err = stmt.ExecContext(ctx, &product.ProductName, &product.ProductAmount,
+		&product.ProductPrice, &product.ProductUserModify, id); err != nil {
 		return &response.GenericResponse{Error: err.Error()}, err
 	}
 

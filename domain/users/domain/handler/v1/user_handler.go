@@ -67,7 +67,8 @@ func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request)
 }
 
 // GetUsersHandler is the HTTP handler for retrieving users.
-// It calls the user service to retrieve the list of users and returns a JSON response containing the user information upon success.
+// It calls the user service to retrieve the list of users and returns a JSON response containing.
+// the user information upon success.
 // If there is an error processing the request, it returns an appropriate HTTP error response.
 func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()

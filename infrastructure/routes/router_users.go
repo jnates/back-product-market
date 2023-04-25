@@ -14,7 +14,7 @@ import (
 // The function takes a database connection as an argument and returns an HTTP handler.
 func RoutesUsers(conn *database.DataDB) http.Handler {
 	router := chi.NewRouter()
-	users := v1.NewUserHandler(conn) //domain
+	users := v1.NewUserHandler(conn) // domain.
 	router.Mount("/", routesUser(users))
 	return router
 }

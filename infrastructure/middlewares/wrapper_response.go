@@ -29,7 +29,7 @@ type SuccessfullyMessage struct {
 // Map is a convenient way to create objects of unknown types.
 type Map map[string]interface{}
 
-func JSON(w http.ResponseWriter, r *http.Request, statusCode int, data interface{}) error {
+func JSON(w http.ResponseWriter, r *http.Request, statusCode int, data interface{}) error { //nolint
 	if data == nil {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(statusCode)

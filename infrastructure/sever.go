@@ -17,6 +17,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+const time30 = 30
+
 // Server is a base Server configuration.
 type Server struct {
 	*http.Server
@@ -53,7 +55,7 @@ func (srv *Server) gracefulShutdown() {
 	signal.Notify(quit, os.Interrupt)
 	sig := <-quit
 	log.Info().Msgf("CMD is shutting down %s", sig.String())
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time30*time.Second)
 	defer cancel()
 
 	srv.SetKeepAlivesEnabled(false)

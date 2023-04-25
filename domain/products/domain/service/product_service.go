@@ -20,9 +20,9 @@ type ProductService interface {
 	DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error)
 }
 
-func NewProductService(ProductRepository repository.ProductRepository) ProductService {
+func NewProductService(productRepository repository.ProductRepository) ProductService {
 	return &productService{
-		ProductRepository: ProductRepository,
+		ProductRepository: productRepository,
 	}
 }
 

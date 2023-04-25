@@ -19,9 +19,9 @@ type UserService interface {
 	GetUsers(ctx context.Context) (*response.GenericUserResponse, error)
 }
 
-func NewUserService(UserRepository repository.UserRepository) UserService {
+func NewUserService(userRepository repository.UserRepository) UserService {
 	return &userService{
-		UserRepository: UserRepository,
+		UserRepository: userRepository,
 	}
 }
 

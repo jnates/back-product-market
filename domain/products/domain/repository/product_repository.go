@@ -7,7 +7,7 @@ import (
 	response "backend_crudgo/types"
 )
 
-// ProductRepository interfaces handlers products
+// ProductRepository interfaces handlers products.
 type ProductRepository interface {
 	CreateProduct(ctx context.Context, product *model.Product) (*response.CreateResponse, error)
 	GetProduct(ctx context.Context, id string) (*response.GenericResponse, error)

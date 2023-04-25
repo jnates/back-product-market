@@ -7,7 +7,7 @@ import (
 	response "backend_crudgo/types"
 )
 
-//UserRepository interfaces handlers users
+// UserRepository interfaces handlers users.
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *model.User) (*response.CreateResponse, error)
 	GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error)

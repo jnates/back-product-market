@@ -1,6 +1,6 @@
 package types
 
-//CreateResponse to message for response handler products.
+// CreateResponse to message for response handler products.
 type CreateResponse struct {
 	Message string `json:"message,omitempty"`
 }

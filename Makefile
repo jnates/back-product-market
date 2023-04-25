@@ -10,7 +10,7 @@ coverage:
 
 .PHONY: lint
 lint:
-	golangci-lint -v run
+	$(subst \,/,$(GOPATH))/bin/golangci-lint.exe -v run
 
 lint-install:
 	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.51.2

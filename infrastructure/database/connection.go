@@ -27,15 +27,15 @@ type DataDB struct {
 }
 
 func getConnection() (*sql.DB, error) {
-	DbHost := os.Getenv(enum.DBHost) //"127.0.0.1"
-	DbDriver := os.Getenv(enum.DBDriver)
-	DbUser := os.Getenv(enum.DBUser)
-	DbPassword := os.Getenv(enum.DBPassword)
-	DbName := os.Getenv(enum.DBName)
-	DbPort := os.Getenv(enum.DBPort)
-	uri := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DbHost, DbPort, DbUser, DbName, DbPassword)
+	DBHost := os.Getenv(enum.DBHost) // "127.0.0.1"
+	DBDriver := os.Getenv(enum.DBDriver)
+	DBUser := os.Getenv(enum.DBUser)
+	DBPassword := os.Getenv(enum.DBPassword)
+	DBName := os.Getenv(enum.DBName)
+	DBPort := os.Getenv(enum.DBPort)
+	uri := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DBHost, DBPort, DBUser, DBName, DBPassword)
 
-	db, err := sql.Open(DbDriver, uri)
+	db, err := sql.Open(DBDriver, uri)
 	if err != nil {
 		return nil, err
 	}
