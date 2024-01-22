@@ -2,6 +2,7 @@ package v1
 
 import (
 	"backend_crudgo/infrastructure/kit/enum"
+	"backend_crudgo/infrastructure/kit/tool"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -30,18 +31,18 @@ func (prod *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request
 	var ctx = r.Context()
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		writeJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
+		tool.WriteJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	result, err := prod.Service.CreateUser(ctx, &user)
 	if err != nil {
-		writeJSONResponseWithMarshalling(w, http.StatusConflict, err.Error())
+		tool.WriteJSONResponseWithMarshalling(w, http.StatusConflict, err.Error())
 		return
 	}
 
 	w.Header().Add(enum.Location, fmt.Sprintf("%s%s", r.URL.String(), result))
-	writeJSONResponseWithMarshalling(w, http.StatusCreated, result)
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusCreated, result)
 }
 
 // LoginUserHandler is the HTTP handler for user login. It receives an HTTP request with a JSON body containing user credentials.
@@ -52,18 +53,17 @@ func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request)
 	var ctx = r.Context()
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		writeJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
+		tool.WriteJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	userResponse, err := prod.Service.LoginUser(ctx, &user)
-
 	if err != nil {
-		writeJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
+		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	writeJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
 }
 
 // GetUsersHandler is the HTTP handler for retrieving users.
@@ -75,23 +75,10 @@ func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) 
 
 	userResponse, err := prod.Service.GetUsers(ctx)
 	if err != nil {
-		writeJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
+		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	writeJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
 }
 
-func writeJSONResponseWithMarshalling(w http.ResponseWriter, statusCode int, data interface{}) {
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	if _, err = w.Write(jsonBytes); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}

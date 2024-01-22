@@ -2,6 +2,7 @@ package v1
 
 import (
 	"backend_crudgo/infrastructure/kit/enum"
+	"backend_crudgo/infrastructure/kit/tool"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -30,9 +31,9 @@ func NewProductHandler(db *database.DataDB) *ProductRouter {
 
 // CreateProductHandler Created initialize handler product.
 func (prod *ProductRouter) CreateProductHandler(w http.ResponseWriter, r *http.Request) {
-	var product model.Product
 	var ctx = r.Context()
 
+	var product model.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
 		return
@@ -51,8 +52,8 @@ func (prod *ProductRouter) CreateProductHandler(w http.ResponseWriter, r *http.R
 // GetProductHandler Created initialize get product.
 func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Request) {
 	var ctx = r.Context()
-	var id = chi.URLParam(r, enum.ID)
 
+	var id = chi.URLParam(r, enum.ID)
 	productResponse, err := prod.Service.GetProduct(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -63,7 +64,7 @@ func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	writeJSONResponseWithMarshalling(w, http.StatusOK, productResponse)
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, productResponse)
 }
 
 func (prod *ProductRouter) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +76,7 @@ func (prod *ProductRouter) GetProductsHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	writeJSONResponseWithMarshalling(w, http.StatusOK, productResponse)
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, productResponse)
 }
 
 // UpdateProductHandler is the HTTP handler for updating a product.
@@ -99,7 +100,7 @@ func (prod *ProductRouter) UpdateProductHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	writeJSONResponseWithMarshalling(w, http.StatusOK, response)
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, response)
 }
 
 // DeleteProductHandler is the HTTP handler for deleting a product.
@@ -113,27 +114,9 @@ func (prod *ProductRouter) DeleteProductHandler(w http.ResponseWriter, r *http.R
 
 	response, err := prod.Service.DeleteProduct(ctx, id)
 	if err != nil {
-		writeJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
+		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	writeJSONResponseWithMarshalling(w, http.StatusOK, response)
-}
-
-// writeJSONResponseWithMarshalling is a helper function that writes a JSON response to the HTTP response writer.
-// It takes the response writer, the HTTP status code to set in the response, and the data to be written as a JSON payload.
-// If there is an error while marshall the data to JSON, it returns an HTTP error response with a status code.
-// of 500 (Internal Server Error).
-func writeJSONResponseWithMarshalling(w http.ResponseWriter, statusCode int, data interface{}) {
-	jsonBytes, err := json.Marshal(data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-	if _, err = w.Write(jsonBytes); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, response)
 }
