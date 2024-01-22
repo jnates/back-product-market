@@ -25,23 +25,6 @@ $ make modd
  golangci-lint --version
 ```
 
-### Generate Swag (Swagger):
-Swag converts Go annotations to Swagger Documentation 2.0. We've created a variety of plugins for popular Go web frameworks. This allows you to quickly integrate with an existing Go project (using Swagger UI).
-
-**Link:** https://github.com/swaggo/swag
-
-
-Install Swagger:
-```bash
- make lint
-```
-
-##### command generate Swagger doc
-```bash
- make swag
-```
-
-
 ### Formatter of code
 #### Install formatter:
 ```bash
