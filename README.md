@@ -20,6 +20,7 @@ $ make modd
 ```bash
  make lint-install-apple-silicon
 ```
+
 ##### command to validate the version
 ```bash
  golangci-lint --version
