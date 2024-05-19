@@ -13,4 +13,5 @@ type UserRepository interface {
 	GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error)
 	LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error)
 	GetUsers(ctx context.Context) (*response.GenericUserResponse, error)
+	GenerateToken(ctx context.Context, user *model.User) (*response.TokenResponse, error)
 }

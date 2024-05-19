@@ -18,24 +18,24 @@ type UserRouter struct {
 	Service service.UserService
 }
 
-// NewUserHandler Should initialize the dependencies for this service.
+// NewUserHandler initializes the dependencies for this service.
 func NewUserHandler(db *database.DataDB) *UserRouter {
 	return &UserRouter{
 		Service: service.NewUserService(persistence.NewUserRepository(db)),
 	}
 }
 
-// CreateUserHandler Created initialize handler user.
-func (prod *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+// CreateUserHandler handles user creation.
+func (ur *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
-	var ctx = r.Context()
+	ctx := r.Context()
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		tool.WriteJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	result, err := prod.Service.CreateUser(ctx, &user)
+	result, err := ur.Service.CreateUser(ctx, &user)
 	if err != nil {
 		tool.WriteJSONResponseWithMarshalling(w, http.StatusConflict, err.Error())
 		return
@@ -45,19 +45,17 @@ func (prod *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request
 	tool.WriteJSONResponseWithMarshalling(w, http.StatusCreated, result)
 }
 
-// LoginUserHandler is the HTTP handler for user login. It receives an HTTP request with a JSON body containing user credentials.
-// It verifies the user's authenticity through the user service and returns a JSON response containing user information and an authentication token upon success.
-// If there is an error processing the request, it returns an appropriate HTTP error response.
-func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
+// LoginUserHandler handles user login.
+func (ur *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user model.User
-	var ctx = r.Context()
+	ctx := r.Context()
 
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		tool.WriteJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	userResponse, err := prod.Service.LoginUser(ctx, &user)
+	userResponse, err := ur.Service.LoginUser(ctx, &user)
 	if err != nil {
 		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
 		return
@@ -66,14 +64,11 @@ func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request)
 	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
 }
 
-// GetUsersHandler is the HTTP handler for retrieving users.
-// It calls the user service to retrieve the list of users and returns a JSON response containing.
-// the user information upon success.
-// If there is an error processing the request, it returns an appropriate HTTP error response.
-func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
+// GetUsersHandler handles retrieving users.
+func (ur *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	userResponse, err := prod.Service.GetUsers(ctx)
+	userResponse, err := ur.Service.GetUsers(ctx)
 	if err != nil {
 		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
 		return
@@ -82,3 +77,33 @@ func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) 
 	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
 }
 
+// AuthHandler maneja la generación de tokens de autenticación.
+func (ur *UserRouter) AuthHandler(w http.ResponseWriter, r *http.Request) {
+	var user model.User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	tokenResponse, err := ur.Service.GenerateToken(r.Context(), &user)
+	if err != nil {
+		http.Error(w, "Error generando el token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	responseMap := map[string]interface{}{
+		"token":     tokenResponse.Token,
+		"expiresAt": tokenResponse.ExpiresAt,
+		"tokenType": tokenResponse.TokenType,
+	}
+
+	json.NewEncoder(w).Encode(responseMap)
+}
+
+// ProtectedHandler handles requests to protected routes.
+func (ur *UserRouter) ProtectedHandler(w http.ResponseWriter, r *http.Request) {
+	response := map[string]string{"message": "This is a protected route"}
+	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, response)
+}

@@ -17,6 +17,7 @@ type UserService interface {
 	LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error)
 	GetUser(ctx context.Context, id string) (*response.GenericUserResponse, error)
 	GetUsers(ctx context.Context) (*response.GenericUserResponse, error)
+	GenerateToken(ctx context.Context, user *model.User) (*response.TokenResponse, error)
 }
 
 func NewUserService(userRepository repository.UserRepository) UserService {
@@ -39,4 +40,8 @@ func (ps *userService) LoginUser(ctx context.Context, user *model.User) (*respon
 
 func (ps *userService) GetUsers(ctx context.Context) (*response.GenericUserResponse, error) {
 	return ps.UserRepository.GetUsers(ctx)
+}
+
+func (ps *userService) GenerateToken(ctx context.Context, user *model.User) (*response.TokenResponse, error) {
+	return ps.UserRepository.GenerateToken(ctx, user)
 }

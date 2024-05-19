@@ -9,7 +9,6 @@ import (
 
 	"backend_crudgo/infrastructure/database"
 	"backend_crudgo/infrastructure/kit/enum"
-
 	routes "backend_crudgo/infrastructure/routes"
 
 	"github.com/go-chi/chi"
@@ -29,13 +28,14 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	srv.Handler.ServeHTTP(w, r)
 }
 
-// newServer initialized a Routes Server with configuration.
+// newServer initializes a Routes Server with configuration.
 func newServer(port string, conn *database.DataDB) *Server {
 	router := chi.NewRouter()
 	router.Use(chiMiddleware.RequestID)
 	router.Use(chiMiddleware.RealIP)
 	router.Use(chiMiddleware.Logger)
 	router.Use(chiMiddleware.Recoverer)
+
 	router.Mount(enum.BasePath, routes.RoutesProducts(conn))
 	router.Mount(enum.BasePathUser, routes.RoutesUsers(conn))
 
@@ -66,7 +66,7 @@ func (srv *Server) gracefulShutdown() {
 	log.Info().Msg("CMD Stopped")
 }
 
-// Start initialize server
+// Start initializes the server
 func (srv *Server) Start() {
 	log.Info().Msg("Starting API cmd")
 

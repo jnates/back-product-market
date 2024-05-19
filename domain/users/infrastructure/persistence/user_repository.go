@@ -91,7 +91,7 @@ func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*respon
 	}
 
 	return &response.GenericUserResponse{
-		Message: "Success",
+		Message: "Login success",
 		User:    token,
 	}, nil
 }
@@ -181,4 +181,20 @@ func generateToken(userID string) (string, error) {
 	}
 
 	return signedToken, nil
+}
+
+// GenerateToken generate a JWT token for the given user.
+func (sr *sqlUserRepo) GenerateToken(ctx context.Context, user *model.User) (*response.TokenResponse, error) {
+	token, err := generateToken(user.UserID)
+	if err != nil {
+		log.Error().Msgf("No se pudo generar el token: [error] %s", err.Error())
+		return nil, err
+	}
+	expirationTime := time.Now().Add(30 * time.Minute)
+
+	return &response.TokenResponse{
+		Token:     token,
+		ExpiresAt: expirationTime,
+		TokenType: "bearer",
+	}, nil
 }
