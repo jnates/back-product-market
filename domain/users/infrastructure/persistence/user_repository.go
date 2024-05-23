@@ -99,7 +99,7 @@ func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*respon
 	}
 
 	return &response.GenericUserResponse{
-		Message: "Inicio de sesión exitoso",
+		Message: "Login success",
 		User:    token,
 	}, nil
 }
