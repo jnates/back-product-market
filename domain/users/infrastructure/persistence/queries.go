@@ -14,10 +14,9 @@ const (
     FROM public.users
     WHERE user_id = $1`
 
-	SelectLoginUser = `SELECT user_id, user_name, user_identifier,
-        user_email, user_password, user_type_identifier
-    FROM public.users
-    WHERE user_name = $1`
+	SelectLoginUser = `SELECT  user_email, user_password, cellphone
+	FROM public.users
+	WHERE user_email = $1 OR cellphone = $1`
 
 	SelectUsers = `SELECT user_id, user_name, user_identifier,
         user_email, user_password, user_type_identifier

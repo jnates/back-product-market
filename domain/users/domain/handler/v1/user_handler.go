@@ -93,13 +93,10 @@ func (ur *UserRouter) AuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	responseMap := map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]interface{}{
 		"token":     tokenResponse.Token,
-		"expiresAt": tokenResponse.ExpiresAt,
 		"tokenType": tokenResponse.TokenType,
-	}
-
-	json.NewEncoder(w).Encode(responseMap)
+	})
 }
 
 // ProtectedHandler handles requests to protected routes.

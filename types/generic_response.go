@@ -1,7 +1,5 @@
 package types
 
-import "time"
-
 // CreateResponse to message for response handler products.
 type CreateResponse struct {
 	Message string `json:"message,omitempty"`
@@ -23,7 +21,6 @@ type GenericUserResponse struct {
 
 // TokenResponse representa la estructura de la respuesta de un token JWT.
 type TokenResponse struct {
-	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
-	TokenType string    `json:"token_type"`
+	Token     string `json:"token"`
+	TokenType string `json:"token_type"`
 }

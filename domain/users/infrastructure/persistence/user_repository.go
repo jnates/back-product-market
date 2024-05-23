@@ -8,7 +8,10 @@ import (
 	response "backend_crudgo/types"
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -59,39 +62,44 @@ func (sr *sqlUserRepo) CreateUser(ctx context.Context, user *model.User) (*respo
 	}, nil
 }
 
-// LoginUser logs in a user by checking if their password is correct.
 func (sr *sqlUserRepo) LoginUser(ctx context.Context, user *model.User) (*response.GenericUserResponse, error) {
+	var credential string
+
 	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectLoginUser)
 	if err != nil {
-		return &response.GenericUserResponse{}, err
+		return nil, fmt.Errorf("error preparing SQL statement: %w", err)
+	}
+	defer stmt.Close()
+
+	if strings.EqualFold(user.Email, user.Cellphone) {
+		return nil, fmt.Errorf("you must provide an email or phone number")
+	} else if user.Email != enum.EmptyString {
+		credential = user.Email
+	} else {
+		credential = user.Cellphone
 	}
 
-	defer func() {
-		err = stmt.Close()
-		if err != nil {
-			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
-		}
-	}()
-
-	row := stmt.QueryRowContext(ctx, user.Name)
+	row := stmt.QueryRowContext(ctx, credential)
 	currentUser := &model.User{}
 
-	if err = row.Scan(&currentUser.UserID, &currentUser.Name, &currentUser.Email, &currentUser.UserIdentifier,
-		&currentUser.UserPassword, &currentUser.UserTypeIdentifier); err != nil {
-		return &response.GenericUserResponse{Error: err.Error()}, err
+	if err := row.Scan(&currentUser.Email, &currentUser.UserPassword, &currentUser.Cellphone); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return &response.GenericUserResponse{Error: "user not found"}, nil
+		}
+		return nil, fmt.Errorf("error scanning row: %w", err)
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(currentUser.UserPassword), []byte(user.UserPassword)); err != nil {
-		return &response.GenericUserResponse{Error: "Password incorrect"}, nil
+	if err := bcrypt.CompareHashAndPassword([]byte(currentUser.UserPassword), []byte(user.UserPassword)); err != nil {
+		return &response.GenericUserResponse{Error: "Incorrect password"}, nil
 	}
+
 	token, err := generateToken(currentUser.UserID)
 	if err != nil {
-		log.Error().Msgf("Could not generate token: [error] %s", err.Error())
-		return nil, err
+		return nil, fmt.Errorf("error generating token: %w ", err)
 	}
 
 	return &response.GenericUserResponse{
-		Message: "Login success",
+		Message: "Inicio de sesión exitoso",
 		User:    token,
 	}, nil
 }
@@ -190,11 +198,9 @@ func (sr *sqlUserRepo) GenerateToken(ctx context.Context, user *model.User) (*re
 		log.Error().Msgf("No se pudo generar el token: [error] %s", err.Error())
 		return nil, err
 	}
-	expirationTime := time.Now().Add(30 * time.Minute)
 
 	return &response.TokenResponse{
 		Token:     token,
-		ExpiresAt: expirationTime,
 		TokenType: "bearer",
 	}, nil
 }
