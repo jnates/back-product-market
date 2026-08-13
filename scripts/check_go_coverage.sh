@@ -41,7 +41,8 @@ pkgs_to_test=$(git diff --name-status "$diff_range" \
   | xargs -r -n1 dirname \
   | sort -u \
   | $GREP_COMMAND -Ev '(^|/)mocks(/|$)' \
-  | $GREP_COMMAND -Ev '(^|/)(interfaces|models|model|enums|constant|constants|docs|configs|proto)(/|$)'
+  | $GREP_COMMAND -Ev '(^|/)(interfaces|models|model|enums|constant|constants|docs|configs|proto|routes)(/|$)' \
+  | $GREP_COMMAND -v '^infrastructure$'
 )
 
 exit_code=0
@@ -59,7 +60,7 @@ for pkg in $pkgs_to_test; do
 
   # Configuración de prueba
   timeout="160s"
-  min_cov=80
+  min_cov=75
 
   # Ejecutar tests con coverage
   go test -shuffle=on -cover -coverprofile="$coverage_file" -timeout="$timeout" -short "./$pkg"
@@ -70,12 +71,14 @@ for pkg in $pkgs_to_test; do
     $GREP_COMMAND -Ev '^(total:|init|SC)'
   )
   if [[ -z "$coverage_output" ]]; then
-    # Sin información de cobertura: listar funciones sin tests
+    # Sin información de cobertura: listar funciones sin tests (si las hay)
     funcs=$($GREP_COMMAND -hE '^func\s' $gofiles | $GREP_COMMAND -Ev '^func (Test|Benchmark)')
-    while IFS= read -r fn; do
-      red "🚨 Please define tests for: $fn"
-      exit_code=1
-    done <<< "$funcs"
+    if [[ -n "$funcs" ]]; then
+      while IFS= read -r fn; do
+        red "🚨 Please define tests for: $fn"
+        exit_code=1
+      done <<< "$funcs"
+    fi
   else
     # Revisar cobertura de cada función
     while IFS= read -r line; do

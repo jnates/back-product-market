@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -o pipefail
 echo "Executing check go mod..."
 # Definir colores si están disponibles
 SCRIPT_DIR="./scripts"

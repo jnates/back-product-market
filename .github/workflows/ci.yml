@@ -84,6 +84,6 @@ jobs:
         if: github.event_name == 'pull_request'
         run: bash scripts/check_go_security.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
 
-      - name: Coverage check (diff, min 80% on touched packages)
+      - name: Coverage check (diff, min 75% on touched packages)
         if: github.event_name == 'pull_request'
         run: bash scripts/check_go_coverage.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"

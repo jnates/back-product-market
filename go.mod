@@ -8,10 +8,10 @@ require (
 	github.com/jnates/go-toolkit v0.1.0
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo/v4 v4.13.4
+	github.com/pashagolub/pgxmock/v4 v4.9.0
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/echo-swagger v1.5.2
-	github.com/swaggo/swag v1.16.2
 	golang.org/x/crypto v0.53.0
 )
 
@@ -37,6 +37,7 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/sv-tools/openapi v0.2.1 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
+	github.com/swaggo/swag v1.16.2 // indirect
 	github.com/swaggo/swag/v2 v2.0.0-rc4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
