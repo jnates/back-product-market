@@ -14,44 +14,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    name: Build, lint and test
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-private-go
         with:
-          fetch-depth: 0
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
 
-      - name: Configure access to private go-toolkit module
-        env:
-          GO_TOOLKIT_PAT: ${{ secrets.GO_TOOLKIT_PAT }}
-        run: |
-          git config --global url."https://x-access-token:${GO_TOOLKIT_PAT}@github.com/".insteadOf "https://github.com/"
-          echo "GOPRIVATE=github.com/jnates/*" >> "$GITHUB_ENV"
+      - run: go build ./...
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-private-go
         with:
-          go-version-file: go.mod
-          cache: true
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
 
-      - name: Add GOPATH/bin to PATH
-        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
-
-      - name: Install diff-check linters
-        run: bash scripts/install_go_linters.sh
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9
-        with:
-          version: latest
-
-      - name: Build
-        run: go build ./...
-
-      - name: Test
-        run: go test ./... -coverprofile=coverage.out
+      - run: go test ./... -coverprofile=coverage.out
 
       - name: Upload coverage report
         if: always()
@@ -61,29 +44,101 @@ jobs:
           path: coverage.out
           retention-days: 7
 
-      - name: go.mod / go.sum tidy check
-        run: bash scripts/check_go_mod.sh
+  lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-private-go
+        with:
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
 
-      - name: Fetch PR base branch
-        if: github.event_name == 'pull_request'
-        run: git fetch origin "${{ github.event.pull_request.base.ref }}"
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
 
-      - name: Commit message check
-        if: github.event_name == 'pull_request'
-        run: bash scripts/check_commits.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+  mod-tidy:
+    name: go.mod / go.sum tidy check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-private-go
+        with:
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
 
-      - name: Format check (diff)
-        if: github.event_name == 'pull_request'
-        run: bash scripts/check_go_format.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+      - run: bash scripts/check_go_mod.sh
 
-      - name: Error handling check (diff)
-        if: github.event_name == 'pull_request'
-        run: bash scripts/check_go_error.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+  commit-message:
+    name: Commit message check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Security check (diff)
-        if: github.event_name == 'pull_request'
-        run: bash scripts/check_go_security.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+      - run: git fetch origin "${{ github.event.pull_request.base.ref }}"
+      - run: bash scripts/check_commits.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
 
-      - name: Coverage check (diff, min 75% on touched packages)
-        if: github.event_name == 'pull_request'
-        run: bash scripts/check_go_coverage.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+  format:
+    name: Format check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-private-go
+        with:
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
+
+      - run: bash scripts/install_go_linters.sh
+      - run: git fetch origin "${{ github.event.pull_request.base.ref }}"
+      - run: bash scripts/check_go_format.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+
+  error-handling:
+    name: Error handling check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-private-go
+        with:
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
+
+      - run: bash scripts/install_go_linters.sh
+      - run: git fetch origin "${{ github.event.pull_request.base.ref }}"
+      - run: bash scripts/check_go_error.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+
+  security:
+    name: Security check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-private-go
+        with:
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
+
+      - run: bash scripts/install_go_linters.sh
+      - run: git fetch origin "${{ github.event.pull_request.base.ref }}"
+      - run: bash scripts/check_go_security.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+
+  coverage:
+    name: Coverage check (min 75% on touched packages)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-private-go
+        with:
+          go-toolkit-pat: ${{ secrets.GO_TOOLKIT_PAT }}
+
+      - run: git fetch origin "${{ github.event.pull_request.base.ref }}"
+      - run: bash scripts/check_go_coverage.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
