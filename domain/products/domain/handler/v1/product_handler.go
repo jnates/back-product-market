@@ -1,122 +1,178 @@
+// Package v1 exposes the HTTP handlers for the products domain.
 package v1
 
 import (
-	"backend_crudgo/infrastructure/kit/enum"
-	"backend_crudgo/infrastructure/kit/tool"
-	"database/sql"
-	"encoding/json"
-	"fmt"
 	"net/http"
+	"strconv"
 
+	"backend_crudgo/domain/products/constants"
 	"backend_crudgo/domain/products/domain/model"
 	"backend_crudgo/domain/products/domain/service"
 	"backend_crudgo/domain/products/infrastructure/persistence"
-	"backend_crudgo/infrastructure/database"
+	"backend_crudgo/infrastructure/kit/apperrors"
 	"backend_crudgo/infrastructure/middlewares"
 
-	"github.com/go-chi/chi"
+	pgxtool "github.com/jnates/go-toolkit/tools/sqlconnection/pgx"
+
+	"github.com/jnates/go-toolkit/tools/customserver"
+	"github.com/labstack/echo/v4"
 )
 
-// ProductRouter router
-type ProductRouter struct {
+// ProductHandler exposes the HTTP endpoints for products.
+type ProductHandler struct {
 	Service service.ProductService
 }
 
-// NewProductHandler Should initialize the dependencies for this service.
-func NewProductHandler(db *database.DataDB) *ProductRouter {
-	return &ProductRouter{
-		Service: service.NewProductService(persistence.NewProductRepository(db)),
+// NewProductHandler wires the product repository, service and handler.
+func NewProductHandler(pool pgxtool.DBPool) *ProductHandler {
+	return &ProductHandler{
+		Service: service.NewProductService(persistence.NewProductRepository(pool)),
 	}
 }
 
-// CreateProductHandler Created initialize handler product.
-func (prod *ProductRouter) CreateProductHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
+// CreateProduct handles POST /products.
+//
+// @Description Create a new product
+// @Tags Products
+// @Accept json
+// @Produce json
+// @ID CreateProduct
+// @Security BearerAuth
+// @Param ProductRequest body model.Product true "Product data"
+// @Success 201 {object} customserver.GenericResponse{data=model.Product}
+// @Failure 400 {object} customserver.GenericResponse
+// @Failure 401 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /products [POST]
+func (h *ProductHandler) CreateProduct(c echo.Context) error {
+	ctx := c.Request().Context()
 
 	var product model.Product
-	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
-		return
+	if err := c.Bind(&product); err != nil {
+		return middlewares.HandleError(c, apperrors.ErrInvalidInput)
 	}
 
-	result, err := prod.Service.CreateProduct(ctx, &product)
+	created, err := h.Service.CreateProduct(ctx, &product)
 	if err != nil {
-		middlewares.HTTPError(w, r, http.StatusConflict, "Conflict", err.Error())
-		return
+		return middlewares.HandleError(c, err)
 	}
 
-	w.Header().Add(enum.Location, fmt.Sprintf("%s%s", r.URL.String(), result))
-	middlewares.JSON(w, r, http.StatusCreated, result)
+	return c.JSON(http.StatusCreated, customserver.GenerateSuccessGenericResponse(created))
 }
 
-// GetProductHandler Created initialize get product.
-func (prod *ProductRouter) GetProductHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
+// GetProduct handles GET /products/:id.
+//
+// @Description Get a single product by ID
+// @Tags Products
+// @Produce json
+// @ID GetProduct
+// @Security BearerAuth
+// @Param id path int true "Product ID"
+// @Success 200 {object} customserver.GenericResponse{data=model.Product}
+// @Failure 400 {object} customserver.GenericResponse
+// @Failure 401 {object} customserver.GenericResponse
+// @Failure 404 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /products/{id} [GET]
+func (h *ProductHandler) GetProduct(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	var id = chi.URLParam(r, enum.ID)
-	productResponse, err := prod.Service.GetProduct(ctx, id)
+	id, err := strconv.ParseInt(c.Param(constants.ID), 10, 64)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			middlewares.HTTPError(w, r, http.StatusNotFound, "Product not found", err.Error())
-			return
-		}
-		middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
-		return
+		return middlewares.HandleError(c, apperrors.ErrInvalidInput)
 	}
 
-	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, productResponse)
-}
-
-func (prod *ProductRouter) GetProductsHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
-
-	productResponse, err := prod.Service.GetProducts(ctx)
+	product, err := h.Service.GetProduct(ctx, id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return middlewares.HandleError(c, err)
 	}
 
-	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, productResponse)
+	return c.JSON(http.StatusOK, customserver.GenerateSuccessGenericResponse(product))
 }
 
-// UpdateProductHandler is the HTTP handler for updating a product.
-// It receives an HTTP request with a JSON body containing the updated product information.
-// It verifies the product ID and updates the product information through the product service.
-// If the update is successful, it returns an HTTP response with a status code of 204 (No Content).
-// If there is an error processing the request, it returns an appropriate HTTP error response.
-func (prod *ProductRouter) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
-	var id = chi.URLParam(r, enum.ID)
+// GetProducts handles GET /products.
+//
+// @Description Get every product
+// @Tags Products
+// @Produce json
+// @ID GetProducts
+// @Security BearerAuth
+// @Success 200 {object} customserver.GenericResponse{data=[]model.Product}
+// @Failure 401 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /products [GET]
+func (h *ProductHandler) GetProducts(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	products, err := h.Service.GetProducts(ctx)
+	if err != nil {
+		return middlewares.HandleError(c, err)
+	}
+
+	return c.JSON(http.StatusOK, customserver.GenerateSuccessGenericResponse(products))
+}
+
+// UpdateProduct handles PUT /products/:id.
+//
+// @Description Update an existing product
+// @Tags Products
+// @Accept json
+// @Produce json
+// @ID UpdateProduct
+// @Security BearerAuth
+// @Param id path int true "Product ID"
+// @Param ProductRequest body model.Product true "Product data"
+// @Success 204 "Product updated successfully"
+// @Failure 400 {object} customserver.GenericResponse
+// @Failure 401 {object} customserver.GenericResponse
+// @Failure 404 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /products/{id} [PUT]
+func (h *ProductHandler) UpdateProduct(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	id, err := strconv.ParseInt(c.Param(constants.ID), 10, 64)
+	if err != nil {
+		return middlewares.HandleError(c, apperrors.ErrInvalidInput)
+	}
 
 	var product model.Product
-	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		middlewares.HTTPError(w, r, http.StatusBadRequest, "Bad request", err.Error())
-		return
+	if err := c.Bind(&product); err != nil {
+		return middlewares.HandleError(c, apperrors.ErrInvalidInput)
 	}
 
-	response, err := prod.Service.UpdateProduct(ctx, id, &product)
-	if err != nil {
-		middlewares.HTTPError(w, r, http.StatusInternalServerError, "Internal server error", err.Error())
-		return
+	if err := h.Service.UpdateProduct(ctx, id, &product); err != nil {
+		return middlewares.HandleError(c, err)
 	}
 
-	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, response)
+	return c.NoContent(http.StatusNoContent)
 }
 
-// DeleteProductHandler is the HTTP handler for deleting a product.
-// It receives an HTTP request with the ID of the product to delete.
-// It verifies the product ID and deletes the product through the product service.
-// If the delete is successful, it returns an HTTP response with a status code of 204 (No Content).
-// If there is an error processing the request, it returns an appropriate HTTP error response.
-func (prod *ProductRouter) DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
-	var id = chi.URLParam(r, enum.ID)
+// DeleteProduct handles DELETE /products/:id.
+//
+// @Description Delete a product
+// @Tags Products
+// @Produce json
+// @ID DeleteProduct
+// @Security BearerAuth
+// @Param id path int true "Product ID"
+// @Success 204 "Product deleted successfully"
+// @Failure 400 {object} customserver.GenericResponse
+// @Failure 401 {object} customserver.GenericResponse
+// @Failure 404 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /products/{id} [DELETE]
+func (h *ProductHandler) DeleteProduct(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	response, err := prod.Service.DeleteProduct(ctx, id)
+	id, err := strconv.ParseInt(c.Param(constants.ID), 10, 64)
 	if err != nil {
-		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
-		return
+		return middlewares.HandleError(c, apperrors.ErrInvalidInput)
 	}
 
-	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, response)
+	if err := h.Service.DeleteProduct(ctx, id); err != nil {
+		return middlewares.HandleError(c, err)
+	}
+
+	return c.NoContent(http.StatusNoContent)
 }

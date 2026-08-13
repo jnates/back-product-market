@@ -1,0 +1,26 @@
+name: Setup private Go toolchain
+description: Authenticates git for the private github.com/jnates/go-toolkit module and installs Go.
+
+inputs:
+  go-toolkit-pat:
+    description: PAT with read access to github.com/jnates/go-toolkit
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure access to private go-toolkit module
+      shell: bash
+      run: |
+        git config --global url."https://x-access-token:${{ inputs.go-toolkit-pat }}@github.com/".insteadOf "https://github.com/"
+        echo "GOPRIVATE=github.com/jnates/*" >> "$GITHUB_ENV"
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: go.mod
+        cache: true
+
+    - name: Add GOPATH/bin to PATH
+      shell: bash
+      run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"

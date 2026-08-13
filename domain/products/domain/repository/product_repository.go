@@ -1,17 +1,23 @@
+// Package repository defines the persistence contract for products.
 package repository
 
 import (
 	"context"
 
 	"backend_crudgo/domain/products/domain/model"
-	response "backend_crudgo/types"
 )
 
-// ProductRepository interfaces handlers products.
+// ProductRepository defines data access operations for products.
+// Implementations must map apperrors.ErrNotFound when a product does not exist.
 type ProductRepository interface {
-	CreateProduct(ctx context.Context, product *model.Product) (*response.CreateResponse, error)
-	GetProduct(ctx context.Context, id string) (*response.GenericResponse, error)
-	GetProducts(ctx context.Context) (*response.GenericResponse, error)
-	UpdateProduct(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error)
-	DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error)
+	// CreateProduct persists a new product and returns it with its generated ID.
+	CreateProduct(ctx context.Context, product *model.Product) (*model.Product, error)
+	// GetProduct retrieves a single product by ID.
+	GetProduct(ctx context.Context, id int64) (*model.Product, error)
+	// GetProducts retrieves every product.
+	GetProducts(ctx context.Context) ([]*model.Product, error)
+	// UpdateProduct updates an existing product identified by id.
+	UpdateProduct(ctx context.Context, id int64, product *model.Product) error
+	// DeleteProduct removes a product identified by id.
+	DeleteProduct(ctx context.Context, id int64) error
 }

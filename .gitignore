@@ -32,7 +32,6 @@ token*.json
 # Node artifact files
 node_modules/
 dist/
-mocks/
 
 # Compiled Java class files
 *.class
@@ -73,3 +72,10 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+
+# === BEGIN: sdd-development-skill ===
+.claude/
+# === END: sdd-development-skill ===
+
+# Claude Code project instructions (local-only, not shared via git)
+CLAUDE.md

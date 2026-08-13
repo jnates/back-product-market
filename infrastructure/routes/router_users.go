@@ -1,29 +1,22 @@
-package infrastructure
+package routes
 
 import (
-	"net/http"
-
 	v1 "backend_crudgo/domain/users/domain/handler/v1"
-	"backend_crudgo/infrastructure/database"
 	"backend_crudgo/infrastructure/kit/enum"
 
-	"github.com/go-chi/chi"
+	pgxtool "github.com/jnates/go-toolkit/tools/sqlconnection/pgx"
+	"github.com/labstack/echo/v4"
 )
 
-// RoutesUsers creates a new router for handling user related requests.
-// The function takes a database connection as an argument and returns an HTTP handler.
-func RoutesUsers(conn *database.DataDB) http.Handler {
-	router := chi.NewRouter()
-	users := v1.NewUserHandler(conn) // domain.
-	router.Mount("/", routesUser(users))
-	return router
-}
+// RegisterUserRoutes mounts the user endpoints. Register/login are public;
+// listing users requires a valid JWT via authMiddleware.
+func RegisterUserRoutes(server *echo.Echo, pool pgxtool.DBPool, authMiddleware echo.MiddlewareFunc) {
+	handler := v1.NewUserHandler(pool)
 
-// routesUser creates a new router for handling user related requests.
-// The function takes a user handler as an argument and returns an HTTP handler.
-func routesUser(handler *v1.UserRouter) http.Handler {
-	router := chi.NewRouter()
-	router.Post(enum.LoginUserPath, handler.LoginUserHandler)
-	router.Post(enum.RegisterPath, handler.CreateUserHandler)
-	return router
+	public := server.Group(enum.BasePathUser)
+	public.POST(enum.RegisterPath, handler.CreateUser)
+	public.POST(enum.LoginUserPath, handler.LoginUser)
+
+	protected := server.Group(enum.BasePathUser, authMiddleware)
+	protected.GET("", handler.GetUsers)
 }

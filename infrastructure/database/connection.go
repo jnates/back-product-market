@@ -1,49 +1,24 @@
+// Package database wires the PostgreSQL connection pool used by every repository.
 package database
 
 import (
 	"backend_crudgo/infrastructure/kit/enum"
-	"database/sql"
-	"fmt"
-	"os"
 
-	// registering database driver
-	_ "github.com/lib/pq"
-	"github.com/rs/zerolog/log"
+	"github.com/jnates/go-toolkit/tools/env"
+	"github.com/jnates/go-toolkit/tools/sqlconnection/pgx"
 )
 
-// New returns a new instance of Data with the database connection ready.
-func New() (*DataDB, error) {
-	db, err := getConnection()
-	if err != nil {
-		return nil, err
+// New opens a PostgreSQL connection pool configured from environment variables
+// and validates connectivity before returning.
+func New() (pgx.DBPool, error) {
+	dbConfig := &pgx.DatabaseConfig{
+		Host:     env.GetString(enum.DBHost, ""),
+		Port:     int(env.GetInt64(enum.DBPort, 0)),
+		Database: env.GetString(enum.DBName, ""),
+		Username: env.GetString(enum.DBUser, ""),
+		Password: env.GetString(enum.DBPassword, ""),
+		SSLMode:  env.GetString(enum.DBSSLMode, "disable"),
 	}
 
-	return &DataDB{DB: db}, nil
-}
-
-// DataDB is struct for library database/sql
-type DataDB struct {
-	DB *sql.DB
-}
-
-func getConnection() (*sql.DB, error) {
-	DBHost := os.Getenv(enum.DBHost) // "127.0.0.1"
-	DBDriver := os.Getenv(enum.DBDriver)
-	DBUser := os.Getenv(enum.DBUser)
-	DBPassword := os.Getenv(enum.DBPassword)
-	DBName := os.Getenv(enum.DBName)
-	DBPort := os.Getenv(enum.DBPort)
-	uri := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable password=%s", DBHost, DBPort, DBUser, DBName, DBPassword)
-
-	db, err := sql.Open(DBDriver, uri)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = db.Ping(); err != nil {
-		return nil, err
-	}
-
-	log.Info().Msg("Connected to database")
-	return db, nil
+	return pgx.NewClient(dbConfig, pgx.DefaultPoolConfig())
 }

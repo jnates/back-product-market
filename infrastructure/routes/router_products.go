@@ -1,32 +1,26 @@
-package infrastructure
+// Package routes registers the Echo routes for each domain.
+package routes
 
 import (
+	"backend_crudgo/domain/products/constants"
 	v1 "backend_crudgo/domain/products/domain/handler/v1"
-	"backend_crudgo/infrastructure/database"
-	"backend_crudgo/infrastructure/middlewares"
-	"net/http"
+	"backend_crudgo/infrastructure/kit/enum"
 
-	"github.com/go-chi/chi"
+	pgxtool "github.com/jnates/go-toolkit/tools/sqlconnection/pgx"
+	"github.com/labstack/echo/v4"
 )
 
-// RoutesProducts creates a new router for handling product related requests.
-// The function takes a database connection as an argument and returns an HTTP handler.
-func RoutesProducts(conn *database.DataDB) http.Handler {
-	router := chi.NewRouter()
-	products := v1.NewProductHandler(conn) // domain.
-	router.Mount("/products", routesProduct(products))
-	return router
-}
+// idParamPath is the route path for endpoints scoped to a single product ID.
+const idParamPath = "/:" + constants.ID
 
-// routesProduct creates a new router for handling product related requests.
-// The function takes a product handler as an argument and returns an HTTP handler.
-func routesProduct(handler *v1.ProductRouter) http.Handler {
-	router := chi.NewRouter()
-	router.Use(middlewares.AuthMiddleware)
-	router.Post("/", handler.CreateProductHandler)
-	router.Get("/", handler.GetProductsHandler)
-	router.Get("/{id}", handler.GetProductHandler)
-	router.Put("/{id}", handler.UpdateProductHandler)
-	router.Delete("/{id}", handler.DeleteProductHandler)
-	return router
+// RegisterProductRoutes mounts the product endpoints, protected by authMiddleware.
+func RegisterProductRoutes(server *echo.Echo, pool pgxtool.DBPool, authMiddleware echo.MiddlewareFunc) {
+	handler := v1.NewProductHandler(pool)
+
+	group := server.Group(enum.BasePath+"/products", authMiddleware)
+	group.POST("", handler.CreateProduct)
+	group.GET("", handler.GetProducts)
+	group.GET(idParamPath, handler.GetProduct)
+	group.PUT(idParamPath, handler.UpdateProduct)
+	group.DELETE(idParamPath, handler.DeleteProduct)
 }
