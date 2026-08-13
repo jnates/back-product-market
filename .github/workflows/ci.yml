@@ -23,6 +23,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure access to private go-toolkit module
+        env:
+          GO_TOOLKIT_PAT: ${{ secrets.GO_TOOLKIT_PAT }}
+        run: |
+          git config --global url."https://x-access-token:${GO_TOOLKIT_PAT}@github.com/".insteadOf "https://github.com/"
+          echo "GOPRIVATE=github.com/jnates/*" >> "$GITHUB_ENV"
+
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
