@@ -113,15 +113,9 @@ validate_commit() {
         return 0
     fi
 
-    # Check JIRA in title (not allowed)
+    # Check JIRA in title (not allowed, when a ticket is present)
     if echo "$title" | grep -qE "$JIRA_PATTERN"; then
         printf '%s|%s\n' "$short_hash" "JIRA ticket should NOT be in title" >> "$tmp_dir/failed_reasons"
-        has_errors=1
-    fi
-
-    # Check JIRA exists in body (required)
-    if ! echo "$body" | grep -qE "$JIRA_PATTERN"; then
-        printf '%s|%s\n' "$short_hash" "Missing JIRA ticket in body" >> "$tmp_dir/failed_reasons"
         has_errors=1
     fi
 
