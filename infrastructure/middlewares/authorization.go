@@ -1,30 +1,35 @@
+// Package middlewares contains cross-cutting Echo middlewares and the shared error handler.
 package middlewares
 
 import (
 	"backend_crudgo/infrastructure/kit/enum"
-	"net/http"
-	"os"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/jnates/go-toolkit/tools/env"
+	"github.com/jnates/go-toolkit/tools/jwttools"
+	jwtEcho "github.com/jnates/go-toolkit/tools/jwttools/echo"
+
+	"github.com/labstack/echo/v4"
 )
 
-// AuthMiddleware is a middleware function that validates a JSON Web Token (JWT) in an HTTP request.
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenString := r.Header.Get(enum.Authorization)
-		if tokenString == enum.EmptyString {
-			http.Error(w, "Authorization token missing", http.StatusUnauthorized)
-			return
-		}
-		tokenString = tokenString[len("Bearer "):]
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			secretKey := os.Getenv(enum.SecretKey)
+// NewAuthMiddleware builds an Echo middleware that validates the Bearer JWT
+// on protected routes using jwttools, signed with the configured SECRET_KEY.
+func NewAuthMiddleware() (echo.MiddlewareFunc, error) {
+	secretKey := env.GetString(enum.SecretKey, "")
+
+	validator, err := jwttools.NewValidator(jwttools.Config{
+		ValidationKeyFunc: func(_ *jwt.Token) (interface{}, error) {
 			return []byte(secretKey), nil
-		})
-		if err != nil || !token.Valid {
-			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
-			return
-		}
-		next.ServeHTTP(w, r)
+		},
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	authenticator, err := jwttools.NewAuthenticator(validator)
+	if err != nil {
+		return nil, err
+	}
+
+	return jwtEcho.JWTAuth(jwtEcho.Config{Authenticator: authenticator}), nil
 }

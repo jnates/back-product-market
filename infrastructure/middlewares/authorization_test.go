@@ -1,65 +1,81 @@
 package middlewares_test
 
 import (
-	"backend_crudgo/infrastructure/kit/enum"
-	"backend_crudgo/infrastructure/middlewares"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
+	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"backend_crudgo/infrastructure/kit/enum"
+	"backend_crudgo/infrastructure/middlewares"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAuthMiddleware(t *testing.T) {
+	secretKey := "test-secret"
+	t.Setenv(enum.SecretKey, secretKey)
+
 	tests := []struct {
-		name      string
-		token     string
-		expectErr bool
+		name           string
+		token          string
+		expectedStatus int
 	}{
 		{
-			name:      "Should return OK when valid token is provided",
-			token:     getTokenString(enum.SecretKey),
-			expectErr: false,
+			name:           "Should return OK when valid token is provided",
+			token:          validToken(t, secretKey),
+			expectedStatus: http.StatusOK,
 		},
 		{
-			name:      "Should return Unauthorized when invalid token is provided",
-			token:     "invalid-token",
-			expectErr: true,
+			name:           "Should return Unauthorized when invalid token is provided",
+			token:          "invalid-token",
+			expectedStatus: http.StatusUnauthorized,
 		},
 		{
-			name:      "Should return Unauthorized when token is missing",
-			token:     enum.EmptyString,
-			expectErr: true,
+			name:           "Should return Unauthorized when token is missing",
+			token:          "",
+			expectedStatus: http.StatusUnauthorized,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assertions := assert.New(t)
-			handlerFunc := func(w http.ResponseWriter, r *http.Request) {}
-			nextHandler := http.HandlerFunc(handlerFunc)
+			authMiddleware, err := middlewares.NewAuthMiddleware()
+			require.NoError(t, err)
+
+			e := echo.New()
 			req := httptest.NewRequest(http.MethodGet, "/", nil)
 			if tt.token != enum.EmptyString {
 				req.Header.Set(enum.Authorization, "Bearer "+tt.token)
 			}
-			os.Setenv(enum.SecretKey, enum.SecretKey)
-			recorder := httptest.NewRecorder()
+			rec := httptest.NewRecorder()
+			c := e.NewContext(req, rec)
 
-			middlewares.AuthMiddleware(nextHandler).ServeHTTP(recorder, req)
+			handler := authMiddleware(func(c echo.Context) error {
+				return c.NoContent(http.StatusOK)
+			})
 
-			if tt.expectErr {
-				assertions.Equal(http.StatusUnauthorized, recorder.Code, "expected status code %v, but got %v", http.StatusUnauthorized, recorder.Code)
-			} else {
-				assertions.Equal(http.StatusOK, recorder.Code, "expected status code %v, but got %v", http.StatusOK, recorder.Code)
-			}
+			_ = handler(c)
+
+			assert.Equal(t, tt.expectedStatus, rec.Code)
 		})
 	}
 }
 
-func getTokenString(secretKey string) string {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{})
-	tokenString, _ := token.SignedString([]byte(secretKey))
-	return tokenString
+func validToken(t *testing.T, secretKey string) string {
+	t.Helper()
+
+	claims := jwt.MapClaims{
+		"sub": int64(1),
+		"exp": time.Now().Add(time.Hour).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	signed, err := token.SignedString([]byte(secretKey))
+	require.NoError(t, err)
+
+	return signed
 }

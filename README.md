@@ -48,11 +48,11 @@ Generate all mocks with expected feat include, see official documentation. This 
 prior to execution you must include the following environment variables
 ```
 DB_HOST=
-DB_DRIVER=
 DB_USER=
 DB_PASSWORD=
 DB_NAME=back_anime
 DB_PORT=
+DB_SSL_MODE=disable
 API_PORT=
 LOGGER_DEBUG=
 SECRET_KEY=

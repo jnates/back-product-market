@@ -1,84 +1,114 @@
+// Package v1 exposes the HTTP handlers for the users domain.
 package v1
 
 import (
-	"backend_crudgo/infrastructure/kit/enum"
-	"backend_crudgo/infrastructure/kit/tool"
-	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"backend_crudgo/domain/users/domain/model"
 	"backend_crudgo/domain/users/domain/service"
 	"backend_crudgo/domain/users/infrastructure/persistence"
-	"backend_crudgo/infrastructure/database"
+	"backend_crudgo/infrastructure/kit/apperrors"
+	"backend_crudgo/infrastructure/middlewares"
+
+	"github.com/jnates/go-toolkit/tools/customserver"
+	pgxtool "github.com/jnates/go-toolkit/tools/sqlconnection/pgx"
+	"github.com/labstack/echo/v4"
 )
 
-// UserRouter is a struct that contains a UserService instance. It is used to create an HTTP router for user-related endpoints.
-type UserRouter struct {
+// LoginRequest is the request body accepted by POST /users/login.
+type LoginRequest struct {
+	UserName string `json:"user_name"`
+	Password string `json:"user_password"`
+}
+
+// UserHandler exposes the HTTP endpoints for users.
+type UserHandler struct {
 	Service service.UserService
 }
 
-// NewUserHandler Should initialize the dependencies for this service.
-func NewUserHandler(db *database.DataDB) *UserRouter {
-	return &UserRouter{
-		Service: service.NewUserService(persistence.NewUserRepository(db)),
+// NewUserHandler wires the user repository, service and handler.
+func NewUserHandler(pool pgxtool.DBPool) *UserHandler {
+	return &UserHandler{
+		Service: service.NewUserService(persistence.NewUserRepository(pool)),
 	}
 }
 
-// CreateUserHandler Created initialize handler user.
-func (prod *UserRouter) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
+// CreateUser handles POST /users/register.
+//
+// @Description Register a new user
+// @Tags Users
+// @Accept json
+// @Produce json
+// @ID CreateUser
+// @Param UserRequest body model.User true "User data"
+// @Success 201 {object} customserver.GenericResponse{data=model.User}
+// @Failure 400 {object} customserver.GenericResponse
+// @Failure 409 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /users/register [POST]
+func (h *UserHandler) CreateUser(c echo.Context) error {
+	ctx := c.Request().Context()
+
 	var user model.User
-	var ctx = r.Context()
-
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		tool.WriteJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
-		return
+	if err := c.Bind(&user); err != nil {
+		return middlewares.HandleError(c, apperrors.ErrInvalidInput)
 	}
 
-	result, err := prod.Service.CreateUser(ctx, &user)
+	created, err := h.Service.CreateUser(ctx, &user)
 	if err != nil {
-		tool.WriteJSONResponseWithMarshalling(w, http.StatusConflict, err.Error())
-		return
+		return middlewares.HandleError(c, err)
 	}
 
-	w.Header().Add(enum.Location, fmt.Sprintf("%s%s", r.URL.String(), result))
-	tool.WriteJSONResponseWithMarshalling(w, http.StatusCreated, result)
+	return c.JSON(http.StatusCreated, customserver.GenerateSuccessGenericResponse(created))
 }
 
-// LoginUserHandler is the HTTP handler for user login. It receives an HTTP request with a JSON body containing user credentials.
-// It verifies the user's authenticity through the user service and returns a JSON response containing user information and an authentication token upon success.
-// If there is an error processing the request, it returns an appropriate HTTP error response.
-func (prod *UserRouter) LoginUserHandler(w http.ResponseWriter, r *http.Request) {
-	var user model.User
-	var ctx = r.Context()
+// LoginUser handles POST /users/login.
+//
+// @Description Authenticate a user and issue a JWT
+// @Tags Users
+// @Accept json
+// @Produce json
+// @ID LoginUser
+// @Param LoginRequest body LoginRequest true "Login credentials"
+// @Success 200 {object} customserver.GenericResponse{data=model.LoginResponse}
+// @Failure 400 {object} customserver.GenericResponse
+// @Failure 401 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /users/login [POST]
+func (h *UserHandler) LoginUser(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		tool.WriteJSONResponseWithMarshalling(w, http.StatusBadRequest, err.Error())
-		return
+	var req LoginRequest
+	if err := c.Bind(&req); err != nil {
+		return middlewares.HandleError(c, apperrors.ErrInvalidInput)
 	}
 
-	userResponse, err := prod.Service.LoginUser(ctx, &user)
+	loginResponse, err := h.Service.LoginUser(ctx, req.UserName, req.Password)
 	if err != nil {
-		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
-		return
+		return middlewares.HandleError(c, err)
 	}
 
-	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
+	return c.JSON(http.StatusOK, customserver.GenerateSuccessGenericResponse(loginResponse))
 }
 
-// GetUsersHandler is the HTTP handler for retrieving users.
-// It calls the user service to retrieve the list of users and returns a JSON response containing.
-// the user information upon success.
-// If there is an error processing the request, it returns an appropriate HTTP error response.
-func (prod *UserRouter) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	var ctx = r.Context()
+// GetUsers handles GET /users.
+//
+// @Description Get every user
+// @Tags Users
+// @Produce json
+// @ID GetUsers
+// @Security BearerAuth
+// @Success 200 {object} customserver.GenericResponse{data=[]model.User}
+// @Failure 401 {object} customserver.GenericResponse
+// @Failure 500 {object} customserver.GenericResponse
+// @Router /users [GET]
+func (h *UserHandler) GetUsers(c echo.Context) error {
+	ctx := c.Request().Context()
 
-	userResponse, err := prod.Service.GetUsers(ctx)
+	users, err := h.Service.GetUsers(ctx)
 	if err != nil {
-		tool.WriteJSONResponseWithMarshalling(w, http.StatusInternalServerError, err.Error())
-		return
+		return middlewares.HandleError(c, err)
 	}
 
-	tool.WriteJSONResponseWithMarshalling(w, http.StatusOK, userResponse)
+	return c.JSON(http.StatusOK, customserver.GenerateSuccessGenericResponse(users))
 }
-

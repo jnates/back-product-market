@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build, lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Add GOPATH/bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Install diff-check linters
+        run: bash scripts/install_go_linters.sh
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: latest
+
+      - name: Build
+        run: go build ./...
+
+      - name: Test
+        run: go test ./... -coverprofile=coverage.out
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
+          retention-days: 7
+
+      - name: go.mod / go.sum tidy check
+        run: bash scripts/check_go_mod.sh
+
+      - name: Fetch PR base branch
+        if: github.event_name == 'pull_request'
+        run: git fetch origin "${{ github.event.pull_request.base.ref }}"
+
+      - name: Commit message check
+        if: github.event_name == 'pull_request'
+        run: bash scripts/check_commits.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+
+      - name: Format check (diff)
+        if: github.event_name == 'pull_request'
+        run: bash scripts/check_go_format.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+
+      - name: Error handling check (diff)
+        if: github.event_name == 'pull_request'
+        run: bash scripts/check_go_error.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+
+      - name: Security check (diff)
+        if: github.event_name == 'pull_request'
+        run: bash scripts/check_go_security.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"
+
+      - name: Coverage check (diff, min 80% on touched packages)
+        if: github.event_name == 'pull_request'
+        run: bash scripts/check_go_coverage.sh "origin/${{ github.event.pull_request.base.ref }}...HEAD"

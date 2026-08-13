@@ -73,3 +73,10 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+
+# === BEGIN: sdd-development-skill ===
+.claude/
+# === END: sdd-development-skill ===
+
+# Claude Code project instructions (local-only, not shared via git)
+CLAUDE.md

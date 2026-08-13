@@ -1,171 +1,221 @@
+// Package persistence implements the product repository against PostgreSQL.
 package persistence
 
 import (
+	"context"
+	"errors"
+	"time"
+
+	"backend_crudgo/domain/products/constants"
 	"backend_crudgo/domain/products/domain/model"
 	repoDomain "backend_crudgo/domain/products/domain/repository"
-	"backend_crudgo/infrastructure/database"
-	response "backend_crudgo/types"
-	"errors"
+	"backend_crudgo/infrastructure/kit/apperrors"
 
-	"context"
-	"database/sql"
+	"github.com/jackc/pgx/v5"
+	"github.com/jnates/go-toolkit/tools/querybuilder"
+	pgxtool "github.com/jnates/go-toolkit/tools/sqlconnection/pgx"
 
 	"github.com/rs/zerolog/log"
 )
 
 type sqlProductRepo struct {
-	Conn *database.DataDB
+	pool pgxtool.DBPool
 }
 
-// NewProductRepository Should initialize the dependencies for this service.
-func NewProductRepository(conn *database.DataDB) repoDomain.ProductRepository {
-	return &sqlProductRepo{
-		Conn: conn,
-	}
+// NewProductRepository builds a ProductRepository backed by the given connection pool.
+func NewProductRepository(pool pgxtool.DBPool) repoDomain.ProductRepository {
+	return &sqlProductRepo{pool: pool}
 }
 
-// CreateProduct takes in a context and a product as input and returns a CreateResponse and error.
-// It prepares an SQL statement to insert a product into the database and then executes the query.
-// If the query executes successfully, a success response is returned with a message "Product created".
-func (sr *sqlProductRepo) CreateProduct(ctx context.Context, product *model.Product) (*response.CreateResponse, error) {
-	var idResult string
+// CreateProduct inserts a new product and returns it with its generated ID.
+//
+// Parameters:
+//   - product: the product to persist; ProductUserCreated must be set by the caller
+//
+// Returns:
+//   - the created product including its generated ID and timestamps
+//   - an error if the insert fails
+func (sr *sqlProductRepo) CreateProduct(ctx context.Context, product *model.Product) (*model.Product, error) {
+	subLogger := log.With().Str("repository", "ProductRepository").Str("method", "CreateProduct").Logger()
 
-	stmt, err := sr.Conn.DB.PrepareContext(ctx, InsertProduct)
-	if err != nil {
-		return &response.CreateResponse{}, err
+	now := time.Now()
+	query, args, errBuilder := querybuilder.NewInsertBuilder().
+		Into(constants.ProductsTable).
+		Columns(constants.ColumnProductName, constants.ColumnProductAmount, constants.ColumnProductPrice,
+			constants.ColumnProductUserCreated, constants.ColumnProductDateCreated,
+			constants.ColumnProductUserModify, constants.ColumnProductDateModify).
+		Values(product.ProductName, product.ProductAmount, product.ProductPrice, product.ProductUserCreated,
+			now, product.ProductUserCreated, now).
+		Returning(constants.ColumnProductID).
+		Build()
+	if errBuilder != nil {
+		subLogger.Error().Err(errBuilder).Msg("error building insert query")
+		return nil, errBuilder
 	}
 
-	defer func() {
-		if err = stmt.Close(); err != nil {
-			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
-		}
-	}()
-
-	row := stmt.QueryRowContext(ctx, &product.ProductID, &product.ProductName, &product.ProductAmount,
-		&product.ProductPrice, &product.ProductUserCreated, &product.ProductUserModify)
-
-	if err = row.Scan(&idResult); err != sql.ErrNoRows {
-		return &response.CreateResponse{}, err
+	var productID int64
+	if err := sr.pool.QueryRow(ctx, query, args...).Scan(&productID); err != nil {
+		subLogger.Error().Err(err).Msg("error executing insert query")
+		return nil, err
 	}
 
-	return &response.CreateResponse{
-		Message: "Product created",
-	}, nil
+	created := *product
+	created.ProductID = productID
+	created.ProductDateCreated = now
+	created.ProductUserModify = product.ProductUserCreated
+	created.ProductDateModify = now
+
+	return &created, nil
 }
 
-// GetProduct takes in a context and an id as input and returns a GenericResponse and error.
-// It prepares an SQL statement to select a product from the database by its id and then executes the query.
-// If the query executes successfully, a success response is returned with the selected product.
-func (sr *sqlProductRepo) GetProduct(ctx context.Context, id string) (*response.GenericResponse, error) {
-	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProduct)
-	if err != nil {
-		return &response.GenericResponse{}, err
-	}
-	defer func() {
-		if err = stmt.Close(); err != nil {
-			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
-		}
-	}()
+// GetProduct retrieves a single product by ID.
+//
+// Parameters:
+//   - id: the product identifier
+//
+// Returns:
+//   - the matching product
+//   - apperrors.ErrNotFound if no product matches id
+func (sr *sqlProductRepo) GetProduct(ctx context.Context, id int64) (*model.Product, error) {
+	subLogger := log.With().Str("repository", "ProductRepository").Str("method", "GetProduct").Logger()
 
-	row := stmt.QueryRowContext(ctx, id)
-	product := &model.Product{}
-
-	if err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductPrice,
-		&product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify); err != nil {
-		if err == sql.ErrNoRows {
-			return &response.GenericResponse{Error: "Product not found"}, errors.New(" Product not found ")
-		}
-		return &response.GenericResponse{Error: err.Error()}, err
+	query, args, errBuilder := querybuilder.NewSelectBuilder().
+		Select(constants.Columns...).
+		From(constants.ProductsTable).
+		Where(constants.ColumnProductID, querybuilder.OpEqual, id).
+		Limit(1).
+		Build()
+	if errBuilder != nil {
+		subLogger.Error().Err(errBuilder).Msg("error building select query")
+		return nil, errBuilder
 	}
 
-	return &response.GenericResponse{
-		Message: "Get product success",
-		Product: product,
-	}, nil
+	var product ProductDB
+	row := sr.pool.QueryRow(ctx, query, args...)
+	if err := row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductPrice,
+		&product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify,
+		&product.ProductDateModify); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, apperrors.ErrNotFound
+		}
+		subLogger.Error().Err(err).Msg("error executing select query")
+		return nil, err
+	}
+
+	return product.ToModel(), nil
 }
 
-// GetProducts takes in a context as input and returns a GenericResponse and error.
-// It prepares an SQL statement to select all products from the database and then executes the query.
-// If the query executes successfully, a success response is returned with a list of selected products.
-func (sr *sqlProductRepo) GetProducts(ctx context.Context) (*response.GenericResponse, error) {
-	stmt, err := sr.Conn.DB.PrepareContext(ctx, SelectProducts)
+// GetProducts retrieves every product.
+//
+// Returns:
+//   - the list of products, empty if none exist
+//   - an error if the query fails
+func (sr *sqlProductRepo) GetProducts(ctx context.Context) ([]*model.Product, error) {
+	subLogger := log.With().Str("repository", "ProductRepository").Str("method", "GetProducts").Logger()
+
+	query, args, errBuilder := querybuilder.NewSelectBuilder().
+		Select(constants.Columns...).
+		From(constants.ProductsTable).
+		OrderBy(constants.ColumnProductID, querybuilder.Asc).
+		Build()
+	if errBuilder != nil {
+		subLogger.Error().Err(errBuilder).Msg("error building select query")
+		return nil, errBuilder
+	}
+
+	rows, err := sr.pool.Query(ctx, query, args...)
 	if err != nil {
-		return &response.GenericResponse{}, nil
+		subLogger.Error().Err(err).Msg("error executing select query")
+		return nil, err
 	}
+	defer rows.Close()
 
-	defer func() {
-		if err = stmt.Close(); err != nil {
-			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
-		}
-	}()
-	row, err := sr.Conn.DB.QueryContext(ctx, SelectProducts)
+	items, err := pgxtool.ScanRows(rows, subLogger, scanProductDB)
 	if err != nil {
-		return &response.GenericResponse{}, nil
+		return nil, err
 	}
 
-	var products []*model.Product
-	for row.Next() {
-		var product = &model.Product{}
-		err = row.Scan(&product.ProductID, &product.ProductName, &product.ProductAmount, &product.ProductPrice,
-			&product.ProductUserCreated, &product.ProductDateCreated, &product.ProductUserModify, &product.ProductDateModify)
-
-		products = append(products, product)
-	}
-	if err := row.Err(); err != nil {
-		return &response.GenericResponse{Error: err.Error()}, err
+	products := make([]*model.Product, 0, len(items))
+	for i := range items {
+		products = append(products, items[i].ToModel())
 	}
 
-	return &response.GenericResponse{
-		Message: "Get product success",
-		Product: products,
-	}, nil
+	return products, nil
 }
 
-// UpdateProduct takes in a context, an id and a product as input and returns a GenericResponse and error.
-// It prepares an SQL statement to update a product in the database and then executes the query.
-// If the query executes successfully, a success response is returned with a message "Product updated".
-func (sr *sqlProductRepo) UpdateProduct(ctx context.Context, id string, product *model.Product) (*response.GenericResponse, error) {
-	stmt, err := sr.Conn.DB.PrepareContext(ctx, UpdateProduct)
-	if err != nil {
-		return &response.GenericResponse{}, err
-	}
-
-	defer func() {
-		if err = stmt.Close(); err != nil {
-			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
-		}
-	}()
-
-	if _, err = stmt.ExecContext(ctx, &product.ProductName, &product.ProductAmount,
-		&product.ProductPrice, &product.ProductUserModify, id); err != nil {
-		return &response.GenericResponse{Error: err.Error()}, err
-	}
-
-	return &response.GenericResponse{
-		Message: "Product updated",
-	}, nil
+// scanProductDB scans a single row into a ProductDB, following column order in constants.Columns.
+func scanProductDB(s pgxtool.Scanner) (ProductDB, error) {
+	var p ProductDB
+	err := s.Scan(&p.ProductID, &p.ProductName, &p.ProductAmount, &p.ProductPrice,
+		&p.ProductUserCreated, &p.ProductDateCreated, &p.ProductUserModify, &p.ProductDateModify)
+	return p, err
 }
 
-// DeleteProduct takes in a context and an id as input and returns a GenericResponse and error.
-// It prepares an SQL statement to delete a product from the database by its id and then executes the query.
-// If the query executes successfully, a success response is returned with a message "Product deleted".
-func (sr *sqlProductRepo) DeleteProduct(ctx context.Context, id string) (*response.GenericResponse, error) {
-	stmt, err := sr.Conn.DB.PrepareContext(ctx, DeleteProduct)
+// UpdateProduct updates the name, amount and modifier of an existing product.
+//
+// Parameters:
+//   - id: the product identifier
+//   - product: carries the new name, amount and the user performing the modification
+//
+// Returns:
+//   - apperrors.ErrNotFound if no product matches id
+func (sr *sqlProductRepo) UpdateProduct(ctx context.Context, id int64, product *model.Product) error {
+	subLogger := log.With().Str("repository", "ProductRepository").Str("method", "UpdateProduct").Logger()
+
+	query, args, errBuilder := querybuilder.NewUpdateBuilder().
+		Table(constants.ProductsTable).
+		Set(constants.ColumnProductName, product.ProductName).
+		Set(constants.ColumnProductAmount, product.ProductAmount).
+		Set(constants.ColumnProductUserModify, product.ProductUserModify).
+		Set(constants.ColumnProductDateModify, time.Now()).
+		Where(constants.ColumnProductID, querybuilder.OpEqual, id).
+		Build()
+	if errBuilder != nil {
+		subLogger.Error().Err(errBuilder).Msg("error building update query")
+		return errBuilder
+	}
+
+	tag, err := sr.pool.Exec(ctx, query, args...)
 	if err != nil {
-		return &response.GenericResponse{}, err
+		subLogger.Error().Err(err).Msg("error executing update query")
+		return err
 	}
 
-	defer func() {
-		if err = stmt.Close(); err != nil {
-			log.Error().Msgf("Could not close testament : [error] %s", err.Error())
-		}
-	}()
-
-	if _, err = stmt.ExecContext(ctx, id); err != nil {
-		return &response.GenericResponse{Error: err.Error()}, err
+	if tag.RowsAffected() == 0 {
+		return apperrors.ErrNotFound
 	}
 
-	return &response.GenericResponse{
-		Message: "Product deleted",
-	}, nil
+	return nil
+}
+
+// DeleteProduct removes a product identified by id.
+//
+// Parameters:
+//   - id: the product identifier
+//
+// Returns:
+//   - apperrors.ErrNotFound if no product matches id
+func (sr *sqlProductRepo) DeleteProduct(ctx context.Context, id int64) error {
+	subLogger := log.With().Str("repository", "ProductRepository").Str("method", "DeleteProduct").Logger()
+
+	query, args, errBuilder := querybuilder.NewDeleteBuilder().
+		Table(constants.ProductsTable).
+		Where(constants.ColumnProductID, querybuilder.OpEqual, id).
+		Build()
+	if errBuilder != nil {
+		subLogger.Error().Err(errBuilder).Msg("error building delete query")
+		return errBuilder
+	}
+
+	tag, err := sr.pool.Exec(ctx, query, args...)
+	if err != nil {
+		subLogger.Error().Err(err).Msg("error executing delete query")
+		return err
+	}
+
+	if tag.RowsAffected() == 0 {
+		return apperrors.ErrNotFound
+	}
+
+	return nil
 }

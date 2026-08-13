@@ -13,7 +13,7 @@ lint:
 	$(subst \,/,$(GOPATH))/bin/golangci-lint.exe -v run
 
 lint-install:
-	curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.51.2
+	curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(GOPATH)/bin v2.12.2
 
 
 lint-install-apple-silicon:
@@ -36,6 +36,15 @@ generate-mocks:
 	mockery --all --recursive --case=underscore --output=./mocks
 
 .PHONY: generate-mocks
+
+install-swag:
+	go install -v github.com/swaggo/swag/cmd/swag@latest
+
+.PHONY: swag
+swag:
+	swag init -g cmd/api/main.go --parseDependency --parseInternal
+	cp ./docs/swagger.json ./docs/product-market-openapi.json
+	cp ./docs/swagger.yaml ./docs/product-market-openapi.yaml
 
 .PHONY: build
 build:
