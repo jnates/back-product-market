@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"os/signal"
@@ -71,7 +72,7 @@ func Start(port string) {
 	defer pool.Close()
 
 	go func() {
-		if err := server.Start(":" + port); err != nil && err != http.ErrServerClosed {
+		if err := server.Start(":" + port); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatal().Err(err).Msgf("could not listen on port %s", port)
 		}
 	}()
