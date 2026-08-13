@@ -4,7 +4,7 @@ run:
   tests: false
 
 linters:
-  disable-all: true
+  default: none
   enable:
     - bodyclose
     - dogsled
@@ -98,4 +98,5 @@ formatters:
     - goimports
   settings:
     goimports:
-      local-prefixes: backend_crudgo
+      local-prefixes:
+        - backend_crudgo
