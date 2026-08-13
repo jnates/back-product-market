@@ -32,7 +32,6 @@ token*.json
 # Node artifact files
 node_modules/
 dist/
-mocks/
 
 # Compiled Java class files
 *.class
