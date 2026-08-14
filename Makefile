@@ -42,7 +42,7 @@ install-swag:
 
 .PHONY: swag
 swag:
-	swag init -g cmd/api/main.go --parseDependency --parseInternal
+	swag init -g cmd/main.go --parseDependency --parseInternal
 	cp ./docs/swagger.json ./docs/product-market-openapi.json
 	cp ./docs/swagger.yaml ./docs/product-market-openapi.yaml
 

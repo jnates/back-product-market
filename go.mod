@@ -12,6 +12,7 @@ require (
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/echo-swagger v1.5.2
+	go.uber.org/dig v1.19.0
 	golang.org/x/crypto v0.53.0
 )
 
