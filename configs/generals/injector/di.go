@@ -8,6 +8,7 @@ import (
 	productsRoutes "backend_crudgo/configs/generals/router/products"
 	usersRoutes "backend_crudgo/configs/generals/router/users"
 	"backend_crudgo/configs/storage"
+	"backend_crudgo/pkg/kit/validation"
 	"backend_crudgo/pkg/middleware"
 	productsHandler "backend_crudgo/products/handler"
 	productsRepository "backend_crudgo/products/repository"
@@ -18,6 +19,7 @@ import (
 
 	customserverEcho "github.com/jnates/go-toolkit/tools/customserver/echo"
 
+	"github.com/labstack/echo/v4"
 	"go.uber.org/dig"
 )
 
@@ -29,7 +31,7 @@ func BuildContainer(config *configs.Config) *dig.Container {
 
 	provide(container, func() *configs.Config { return config })
 	provide(container, storage.PostgresConnection)
-	provide(container, customserverEcho.NewServer)
+	provide(container, newServer)
 	provide(container, middleware.NewAuthMiddleware)
 
 	provide(container, productsRepository.NewProductRepository)
@@ -46,6 +48,15 @@ func BuildContainer(config *configs.Config) *dig.Container {
 	provide(container, router.NewRouter)
 
 	return container
+}
+
+// newServer builds the shared Echo instance with the request-body validator
+// (GUIDE-HTTP-009) wired in, on top of customserverEcho.NewServer's defaults.
+func newServer() *echo.Echo {
+	server := customserverEcho.NewServer()
+	server.Validator = validation.New()
+
+	return server
 }
 
 // provide registers a constructor and panics if dig rejects it (duplicate or malformed provider).

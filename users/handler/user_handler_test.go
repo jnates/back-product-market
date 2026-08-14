@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"backend_crudgo/pkg/kit/customErrors"
+	"backend_crudgo/pkg/kit/validation"
 	"backend_crudgo/users/mocks"
 	"backend_crudgo/users/models"
 
@@ -34,20 +35,30 @@ func newUserRequest(t *testing.T, method, target string, body any) (echo.Context
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
-	return echo.New().NewContext(req, rec), rec
+	e := echo.New()
+	e.Validator = validation.New()
+
+	return e.NewContext(req, rec), rec
 }
 
-func TestCreateUserHandler(t *testing.T) {
+func TestUserHandler_CreateUser(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewUserService(t)
 		h := NewUserHandler(mockSvc)
 
-		user := models.User{Name: "Test User", UserPassword: "secret"}
+		req := CreateUserRequest{
+			Name: "Test User", Email: "test@example.com", UserIdentifier: 123,
+			UserPassword: "secretpw", UserTypeIdentifier: 1,
+		}
+		user := models.User{
+			Name: req.Name, Email: req.Email, UserIdentifier: req.UserIdentifier,
+			UserPassword: req.UserPassword, UserTypeIdentifier: req.UserTypeIdentifier,
+		}
 		created := &models.User{UserID: 1, Name: "Test User"}
 
 		mockSvc.On("CreateUser", mock.Anything, &user).Return(created, nil)
 
-		c, rec := newUserRequest(t, http.MethodPost, "/users/register", user)
+		c, rec := newUserRequest(t, http.MethodPost, "/users/register", req)
 
 		assert.NoError(t, h.CreateUser(c))
 		assert.Equal(t, http.StatusCreated, rec.Code)
@@ -70,17 +81,24 @@ func TestCreateUserHandler(t *testing.T) {
 		mockSvc := mocks.NewUserService(t)
 		h := NewUserHandler(mockSvc)
 
-		user := models.User{Name: "Test User"}
+		req := CreateUserRequest{
+			Name: "Test User", Email: "test@example.com", UserIdentifier: 123,
+			UserPassword: "secretpw", UserTypeIdentifier: 1,
+		}
+		user := models.User{
+			Name: req.Name, Email: req.Email, UserIdentifier: req.UserIdentifier,
+			UserPassword: req.UserPassword, UserTypeIdentifier: req.UserTypeIdentifier,
+		}
 		mockSvc.On("CreateUser", mock.Anything, &user).Return(nil, customErrors.ErrConflict)
 
-		c, rec := newUserRequest(t, http.MethodPost, "/users/register", user)
+		c, rec := newUserRequest(t, http.MethodPost, "/users/register", req)
 
 		assert.NoError(t, h.CreateUser(c))
 		assert.Equal(t, http.StatusConflict, rec.Code)
 	})
 }
 
-func TestLoginUserHandler(t *testing.T) {
+func TestUserHandler_LoginUser(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewUserService(t)
 		h := NewUserHandler(mockSvc)
@@ -120,7 +138,7 @@ func TestLoginUserHandler(t *testing.T) {
 	})
 }
 
-func TestGetUsersHandler(t *testing.T) {
+func TestUserHandler_GetUsers(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewUserService(t)
 		h := NewUserHandler(mockSvc)

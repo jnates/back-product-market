@@ -1,0 +1,449 @@
+basePath: /api/market
+definitions:
+  backend_crudgo_products_models.Product:
+    properties:
+      product_amount:
+        type: integer
+      product_id:
+        type: integer
+      product_name:
+        type: string
+      product_price:
+        type: number
+      product_user_created:
+        type: integer
+      product_user_modify:
+        type: integer
+    type: object
+  backend_crudgo_users_models.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  backend_crudgo_users_models.User:
+    properties:
+      user_email:
+        type: string
+      user_id:
+        type: integer
+      user_identifier:
+        type: integer
+      user_name:
+        type: string
+      user_password:
+        type: string
+      user_type_identifier:
+        type: integer
+    type: object
+  configs_generals_router_health.Response:
+    properties:
+      postgres:
+        type: string
+    type: object
+  customserver.GenericResponse:
+    properties:
+      data: {}
+      is_successful:
+        type: boolean
+      status_code:
+        type: integer
+      status_reason:
+        type: string
+    type: object
+  products_handler.CreateProductRequest:
+    properties:
+      product_amount:
+        minimum: 0
+        type: integer
+      product_name:
+        maxLength: 200
+        minLength: 2
+        type: string
+      product_price:
+        minimum: 0
+        type: number
+    required:
+    - product_name
+    type: object
+  products_handler.UpdateProductRequest:
+    properties:
+      product_amount:
+        minimum: 0
+        type: integer
+      product_name:
+        maxLength: 200
+        minLength: 2
+        type: string
+    required:
+    - product_name
+    type: object
+  users_handler.CreateUserRequest:
+    properties:
+      user_email:
+        type: string
+      user_identifier:
+        type: integer
+      user_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      user_password:
+        minLength: 8
+        type: string
+      user_type_identifier:
+        type: integer
+    required:
+    - user_email
+    - user_identifier
+    - user_name
+    - user_password
+    - user_type_identifier
+    type: object
+  users_handler.LoginRequest:
+    properties:
+      user_name:
+        type: string
+      user_password:
+        type: string
+    required:
+    - user_name
+    - user_password
+    type: object
+info:
+  contact: {}
+  description: REST API for managing products and users with JWT-based authentication.
+  title: Product Market API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Report the health of the API and its dependencies
+      operationId: HealthCheck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/configs_generals_router_health.Response'
+      tags:
+      - Health
+  /products:
+    get:
+      description: Get every product
+      operationId: GetProducts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/customserver.GenericResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/backend_crudgo_products_models.Product'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product
+      operationId: CreateProduct
+      parameters:
+      - description: Product data
+        in: body
+        name: ProductRequest
+        required: true
+        schema:
+          $ref: '#/definitions/products_handler.CreateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/customserver.GenericResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/backend_crudgo_products_models.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - Products
+  /products/{id}:
+    delete:
+      description: Delete a product
+      operationId: DeleteProduct
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Product deleted successfully
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - Products
+    get:
+      description: Get a single product by ID
+      operationId: GetProduct
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/customserver.GenericResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/backend_crudgo_products_models.Product'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product
+      operationId: UpdateProduct
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Product data
+        in: body
+        name: ProductRequest
+        required: true
+        schema:
+          $ref: '#/definitions/products_handler.UpdateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Product updated successfully
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - Products
+  /users:
+    get:
+      description: Get every user
+      operationId: GetUsers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/customserver.GenericResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/backend_crudgo_users_models.User'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - Users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and issue a JWT
+      operationId: LoginUser
+      parameters:
+      - description: Login credentials
+        in: body
+        name: LoginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/users_handler.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/customserver.GenericResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/backend_crudgo_users_models.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      tags:
+      - Users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      operationId: CreateUser
+      parameters:
+      - description: User data
+        in: body
+        name: UserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/users_handler.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/customserver.GenericResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/backend_crudgo_users_models.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customserver.GenericResponse'
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

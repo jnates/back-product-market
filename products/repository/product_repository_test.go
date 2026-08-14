@@ -28,7 +28,7 @@ func anyArgs(n int) []interface{} {
 	return args
 }
 
-func TestCreateProduct(t *testing.T) {
+func TestProductRepository_CreateProduct(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -59,7 +59,7 @@ func TestCreateProduct(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestCreateProductError(t *testing.T) {
+func TestProductRepository_CreateProduct_Error(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -75,7 +75,7 @@ func TestCreateProductError(t *testing.T) {
 	assert.Nil(t, created)
 }
 
-func TestGetProduct(t *testing.T) {
+func TestProductRepository_GetProduct(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -104,7 +104,7 @@ func TestGetProduct(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestGetProductNotFound(t *testing.T) {
+func TestProductRepository_GetProduct_NotFound(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -119,7 +119,7 @@ func TestGetProductNotFound(t *testing.T) {
 	assert.Nil(t, product)
 }
 
-func TestGetProductQueryError(t *testing.T) {
+func TestProductRepository_GetProduct_QueryError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -135,7 +135,7 @@ func TestGetProductQueryError(t *testing.T) {
 	assert.Nil(t, product)
 }
 
-func TestGetProducts(t *testing.T) {
+func TestProductRepository_GetProducts(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -164,7 +164,7 @@ func TestGetProducts(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestGetProductsQueryError(t *testing.T) {
+func TestProductRepository_GetProducts_QueryError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -179,7 +179,7 @@ func TestGetProductsQueryError(t *testing.T) {
 	assert.Nil(t, products)
 }
 
-func TestUpdateProduct(t *testing.T) {
+func TestProductRepository_UpdateProduct(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -195,7 +195,7 @@ func TestUpdateProduct(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestUpdateProductNotFound(t *testing.T) {
+func TestProductRepository_UpdateProduct_NotFound(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -210,7 +210,7 @@ func TestUpdateProductNotFound(t *testing.T) {
 	assert.ErrorIs(t, err, customErrors.ErrNotFound)
 }
 
-func TestUpdateProductExecError(t *testing.T) {
+func TestProductRepository_UpdateProduct_ExecError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -226,7 +226,7 @@ func TestUpdateProductExecError(t *testing.T) {
 	assert.False(t, errors.Is(err, customErrors.ErrNotFound))
 }
 
-func TestDeleteProduct(t *testing.T) {
+func TestProductRepository_DeleteProduct(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -241,7 +241,7 @@ func TestDeleteProduct(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestDeleteProductExecError(t *testing.T) {
+func TestProductRepository_DeleteProduct_ExecError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -256,7 +256,7 @@ func TestDeleteProductExecError(t *testing.T) {
 	assert.False(t, errors.Is(err, customErrors.ErrNotFound))
 }
 
-func TestDeleteProductNotFound(t *testing.T) {
+func TestProductRepository_DeleteProduct_NotFound(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()

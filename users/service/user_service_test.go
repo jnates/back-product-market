@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateUser(t *testing.T) {
+func TestUserService_CreateUser(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewUserRepository(t)
 	userService := NewUserService(mockRepo)
@@ -39,7 +39,7 @@ func TestCreateUser(t *testing.T) {
 	assertions.Equal(created, res)
 }
 
-func TestCreateUserConflict(t *testing.T) {
+func TestUserService_CreateUser_Conflict(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewUserRepository(t)
 	userService := NewUserService(mockRepo)
@@ -53,7 +53,7 @@ func TestCreateUserConflict(t *testing.T) {
 	assertions.Nil(res)
 }
 
-func TestGetUser(t *testing.T) {
+func TestUserService_GetUser(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewUserRepository(t)
 	userService := NewUserService(mockRepo)
@@ -67,7 +67,7 @@ func TestGetUser(t *testing.T) {
 	assertions.Equal(user, res)
 }
 
-func TestGetUserNotFound(t *testing.T) {
+func TestUserService_GetUser_NotFound(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewUserRepository(t)
 	userService := NewUserService(mockRepo)
@@ -79,7 +79,7 @@ func TestGetUserNotFound(t *testing.T) {
 	assertions.Nil(res)
 }
 
-func TestGetUsers(t *testing.T) {
+func TestUserService_GetUsers(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewUserRepository(t)
 	userService := NewUserService(mockRepo)
@@ -96,7 +96,7 @@ func TestGetUsers(t *testing.T) {
 	assertions.Equal(users, res)
 }
 
-func TestLoginUser(t *testing.T) {
+func TestUserService_LoginUser(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewUserRepository(t)
 	userService := NewUserService(mockRepo)
@@ -110,7 +110,7 @@ func TestLoginUser(t *testing.T) {
 	assertions.Equal(loginResponse, res)
 }
 
-func TestLoginUserUnauthorized(t *testing.T) {
+func TestUserService_LoginUser_Unauthorized(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewUserRepository(t)
 	userService := NewUserService(mockRepo)

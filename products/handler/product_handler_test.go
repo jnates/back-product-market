@@ -8,14 +8,20 @@ import (
 	"testing"
 
 	"backend_crudgo/pkg/kit/customErrors"
+	"backend_crudgo/pkg/kit/validation"
 	"backend_crudgo/products/constants"
 	"backend_crudgo/products/mocks"
 	"backend_crudgo/products/models"
 
+	"github.com/jnates/go-toolkit/tools/jwttools"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+// testUserID is the authenticated user (JWT sub claim) injected by newProductRequest,
+// matching the audit-field expectations (ProductUserCreated/ProductUserModify) below.
+const testUserID = 1
 
 func TestNewProductHandler(t *testing.T) {
 	mockSvc := mocks.NewProductService(t)
@@ -39,12 +45,19 @@ func newProductRequest(t *testing.T, method, target string, body any) (echo.Cont
 
 	req := httptest.NewRequest(method, target, reader)
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	ctx := jwttools.InjectClaims(req.Context(), &jwttools.Claims{Sub: testUserID}, "test-token")
+	req = req.WithContext(ctx)
+
 	rec := httptest.NewRecorder()
 
-	return echo.New().NewContext(req, rec), rec
+	e := echo.New()
+	e.Validator = validation.New()
+
+	return e.NewContext(req, rec), rec
 }
 
-func TestCreateProductHandler(t *testing.T) {
+func TestProductHandler_CreateProduct(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
@@ -87,7 +100,7 @@ func TestCreateProductHandler(t *testing.T) {
 	})
 }
 
-func TestGetProductHandler(t *testing.T) {
+func TestProductHandler_GetProduct(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
@@ -130,7 +143,7 @@ func TestGetProductHandler(t *testing.T) {
 	})
 }
 
-func TestGetProductsHandler(t *testing.T) {
+func TestProductHandler_GetProducts(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
@@ -157,7 +170,7 @@ func TestGetProductsHandler(t *testing.T) {
 	})
 }
 
-func TestUpdateProductHandler(t *testing.T) {
+func TestProductHandler_UpdateProduct(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
@@ -216,7 +229,7 @@ func TestUpdateProductHandler(t *testing.T) {
 	})
 }
 
-func TestDeleteProductHandler(t *testing.T) {
+func TestProductHandler_DeleteProduct(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
