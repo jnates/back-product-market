@@ -90,7 +90,7 @@ func TestProductHandler_CreateProduct(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
 
-		product := models.Product{ProductName: "Test"}
+		product := models.Product{ProductName: "Test", ProductUserCreated: testUserID}
 		mockSvc.On("CreateProduct", mock.Anything, &product).Return(nil, customErrors.ErrConflict)
 
 		c, rec := newProductRequest(t, http.MethodPost, "/products", product)
@@ -175,7 +175,7 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
 
-		product := models.Product{ProductName: "Updated"}
+		product := models.Product{ProductName: "Updated", ProductUserModify: testUserID}
 		mockSvc.On("UpdateProduct", mock.Anything, int64(1), &product).Return(nil)
 
 		c, rec := newProductRequest(t, http.MethodPut, "/products/1", product)
@@ -217,7 +217,7 @@ func TestProductHandler_UpdateProduct(t *testing.T) {
 		mockSvc := mocks.NewProductService(t)
 		h := NewProductHandler(mockSvc)
 
-		product := models.Product{ProductName: "Updated"}
+		product := models.Product{ProductName: "Updated", ProductUserModify: testUserID}
 		mockSvc.On("UpdateProduct", mock.Anything, int64(1), &product).Return(customErrors.ErrNotFound)
 
 		c, rec := newProductRequest(t, http.MethodPut, "/products/1", product)
