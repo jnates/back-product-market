@@ -22,6 +22,7 @@ import (
 	"backend_crudgo/configs/generals/injector"
 	"backend_crudgo/configs/generals/router"
 	"backend_crudgo/configs/storage"
+	_ "backend_crudgo/docs"
 	"backend_crudgo/pkg/kit/enums"
 
 	"github.com/jnates/go-toolkit/tools/logger/zerolog"

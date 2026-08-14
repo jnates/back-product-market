@@ -8,6 +8,7 @@ import (
 	"backend_crudgo/users/models"
 )
 
+// userService implements interfaces.UserService, delegating to the user repository.
 type userService struct {
 	userRepository interfaces.UserRepository
 }

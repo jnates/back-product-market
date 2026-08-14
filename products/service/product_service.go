@@ -8,6 +8,7 @@ import (
 	"backend_crudgo/products/models"
 )
 
+// productService implements interfaces.ProductService, delegating to the product repository.
 type productService struct {
 	productRepository interfaces.ProductRepository
 }

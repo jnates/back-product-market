@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateProduct(t *testing.T) {
+func TestProductService_CreateProduct(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
@@ -38,7 +38,7 @@ func TestCreateProduct(t *testing.T) {
 	mockRepo.AssertNumberOfCalls(t, "CreateProduct", 1)
 }
 
-func TestGetProductNotFound(t *testing.T) {
+func TestProductService_GetProduct_NotFound(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
@@ -50,7 +50,7 @@ func TestGetProductNotFound(t *testing.T) {
 	assertions.Nil(res)
 }
 
-func TestGetProduct(t *testing.T) {
+func TestProductService_GetProduct(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
@@ -69,7 +69,7 @@ func TestGetProduct(t *testing.T) {
 	assertions.Equal(product, res)
 }
 
-func TestGetProducts(t *testing.T) {
+func TestProductService_GetProducts(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
@@ -86,7 +86,7 @@ func TestGetProducts(t *testing.T) {
 	assertions.Equal(products, res)
 }
 
-func TestUpdateProduct(t *testing.T) {
+func TestProductService_UpdateProduct(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)
@@ -103,7 +103,7 @@ func TestUpdateProduct(t *testing.T) {
 	assertions.NoError(err)
 }
 
-func TestDeleteProduct(t *testing.T) {
+func TestProductService_DeleteProduct(t *testing.T) {
 	assertions := assert.New(t)
 	mockRepo := mocks.NewProductRepository(t)
 	productService := NewProductService(mockRepo)

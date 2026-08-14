@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"backend_crudgo/pkg/kit/customErrors"
+	"backend_crudgo/pkg/kit/validation"
 	"backend_crudgo/users/interfaces"
 	"backend_crudgo/users/models"
 
@@ -14,10 +15,20 @@ import (
 
 // LoginRequest is the request body accepted by POST /users/login.
 type LoginRequest struct {
-	UserName string `json:"user_name"`
-	Password string `json:"user_password"`
+	UserName string `json:"user_name" validate:"required"`
+	Password string `json:"user_password" validate:"required"`
 }
 
+// CreateUserRequest is the request body accepted by POST /users/register.
+type CreateUserRequest struct {
+	Name               string `json:"user_name" validate:"required,min=2,max=100"`
+	Email              string `json:"user_email" validate:"required,email"`
+	UserIdentifier     int64  `json:"user_identifier" validate:"required"`
+	UserPassword       string `json:"user_password" validate:"required,min=8"`
+	UserTypeIdentifier int64  `json:"user_type_identifier" validate:"required"`
+}
+
+// userHandler implements interfaces.UserHandler, delegating to the user service.
 type userHandler struct {
 	service interfaces.UserService
 }
@@ -29,23 +40,43 @@ func NewUserHandler(service interfaces.UserService) interfaces.UserHandler {
 
 // CreateUser handles POST /users/register.
 //
+// Parameters:
+//   - c: echo context containing the HTTP request and response
+//
+// Returns:
+//   - error: HTTP error or nil on success
+//
 // @Description Register a new user
 // @Tags Users
 // @Accept json
 // @Produce json
 // @ID CreateUser
-// @Param UserRequest body models.User true "User data"
+// @Param UserRequest body CreateUserRequest true "User data"
 // @Success 201 {object} customserver.GenericResponse{data=models.User}
 // @Failure 400 {object} customserver.GenericResponse
 // @Failure 409 {object} customserver.GenericResponse
+// @Failure 422 {object} customserver.GenericResponse
 // @Failure 500 {object} customserver.GenericResponse
 // @Router /users/register [POST]
 func (h *userHandler) CreateUser(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	var user models.User
-	if err := c.Bind(&user); err != nil {
+	var req CreateUserRequest
+	if err := c.Bind(&req); err != nil {
 		return customErrors.HandleError(c, customErrors.ErrInvalidInput)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, customserver.GenerateErrorGenericResponse(
+			http.StatusUnprocessableEntity, "validation failed", validation.FormatErrors(err)))
+	}
+
+	user := models.User{
+		Name:               req.Name,
+		Email:              req.Email,
+		UserIdentifier:     req.UserIdentifier,
+		UserPassword:       req.UserPassword,
+		UserTypeIdentifier: req.UserTypeIdentifier,
 	}
 
 	created, err := h.service.CreateUser(ctx, &user)
@@ -58,6 +89,12 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 
 // LoginUser handles POST /users/login.
 //
+// Parameters:
+//   - c: echo context containing the HTTP request and response
+//
+// Returns:
+//   - error: HTTP error or nil on success
+//
 // @Description Authenticate a user and issue a JWT
 // @Tags Users
 // @Accept json
@@ -67,6 +104,7 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 // @Success 200 {object} customserver.GenericResponse{data=models.LoginResponse}
 // @Failure 400 {object} customserver.GenericResponse
 // @Failure 401 {object} customserver.GenericResponse
+// @Failure 422 {object} customserver.GenericResponse
 // @Failure 500 {object} customserver.GenericResponse
 // @Router /users/login [POST]
 func (h *userHandler) LoginUser(c echo.Context) error {
@@ -75,6 +113,11 @@ func (h *userHandler) LoginUser(c echo.Context) error {
 	var req LoginRequest
 	if err := c.Bind(&req); err != nil {
 		return customErrors.HandleError(c, customErrors.ErrInvalidInput)
+	}
+
+	if err := c.Validate(req); err != nil {
+		return c.JSON(http.StatusUnprocessableEntity, customserver.GenerateErrorGenericResponse(
+			http.StatusUnprocessableEntity, "validation failed", validation.FormatErrors(err)))
 	}
 
 	loginResponse, err := h.service.LoginUser(ctx, req.UserName, req.Password)
@@ -86,6 +129,12 @@ func (h *userHandler) LoginUser(c echo.Context) error {
 }
 
 // GetUsers handles GET /users.
+//
+// Parameters:
+//   - c: echo context containing the HTTP request and response
+//
+// Returns:
+//   - error: HTTP error or nil on success
 //
 // @Description Get every user
 // @Tags Users

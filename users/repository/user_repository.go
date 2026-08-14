@@ -30,6 +30,7 @@ const (
 	tokenTTL            = 24 * time.Hour
 )
 
+// userRepository implements interfaces.UserRepository against PostgreSQL via tools/querybuilder.
 type userRepository struct {
 	pool pgxtool.DBPool
 }

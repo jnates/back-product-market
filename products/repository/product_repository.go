@@ -19,6 +19,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// productRepository implements interfaces.ProductRepository against PostgreSQL via tools/querybuilder.
 type productRepository struct {
 	pool pgxtool.DBPool
 }

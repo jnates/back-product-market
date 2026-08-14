@@ -5,6 +5,7 @@ import (
 	"backend_crudgo/pkg/kit/enums"
 
 	"github.com/jnates/go-toolkit/tools/env"
+	"github.com/rs/zerolog/log"
 )
 
 // Config holds every environment-driven setting the application needs at startup.
@@ -21,8 +22,11 @@ type Config struct {
 }
 
 // LoadConfiguration reads Config from environment variables, applying sane defaults.
+// It fails fast (log.Fatal) if a security-critical variable is missing, rather than
+// letting the application boot in an insecure state (e.g. JWTs signed/validated
+// with an empty secret).
 func LoadConfiguration() *Config {
-	return &Config{
+	config := &Config{
 		APIPort:     env.GetString(enums.APIPort, "8080"),
 		DBHost:      env.GetString(enums.DBHost, ""),
 		DBPort:      int(env.GetInt64(enums.DBPort, 0)),
@@ -33,4 +37,10 @@ func LoadConfiguration() *Config {
 		SecretKey:   env.GetString(enums.SecretKey, ""),
 		LoggerDebug: env.GetBoolean(enums.LoggerDebug, false),
 	}
+
+	if config.SecretKey == "" {
+		log.Fatal().Msgf("%s environment variable is required", enums.SecretKey)
+	}
+
+	return config
 }

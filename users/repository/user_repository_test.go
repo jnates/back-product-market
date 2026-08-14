@@ -29,7 +29,7 @@ func anyArgs(n int) []interface{} {
 	return args
 }
 
-func TestCreateUser(t *testing.T) {
+func TestUserRepository_CreateUser(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -59,7 +59,7 @@ func TestCreateUser(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestCreateUserConflict(t *testing.T) {
+func TestUserRepository_CreateUser_Conflict(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -75,7 +75,7 @@ func TestCreateUserConflict(t *testing.T) {
 	assert.Nil(t, created)
 }
 
-func TestCreateUserQueryError(t *testing.T) {
+func TestUserRepository_CreateUser_QueryError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -92,7 +92,7 @@ func TestCreateUserQueryError(t *testing.T) {
 	assert.Nil(t, created)
 }
 
-func TestGetUser(t *testing.T) {
+func TestUserRepository_GetUser(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -120,7 +120,7 @@ func TestGetUser(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestGetUserNotFound(t *testing.T) {
+func TestUserRepository_GetUser_NotFound(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -135,7 +135,7 @@ func TestGetUserNotFound(t *testing.T) {
 	assert.Nil(t, user)
 }
 
-func TestGetUserQueryError(t *testing.T) {
+func TestUserRepository_GetUser_QueryError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -151,7 +151,7 @@ func TestGetUserQueryError(t *testing.T) {
 	assert.Nil(t, user)
 }
 
-func TestGetUsers(t *testing.T) {
+func TestUserRepository_GetUsers(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -177,7 +177,7 @@ func TestGetUsers(t *testing.T) {
 	assert.NoError(t, pool.ExpectationsWereMet())
 }
 
-func TestGetUsersQueryError(t *testing.T) {
+func TestUserRepository_GetUsers_QueryError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -192,7 +192,7 @@ func TestGetUsersQueryError(t *testing.T) {
 	assert.Nil(t, users)
 }
 
-func TestLoginUser(t *testing.T) {
+func TestUserRepository_LoginUser(t *testing.T) {
 	t.Setenv(enums.SecretKey, "test-secret")
 
 	pool, err := pgxmock.NewPool()
@@ -214,7 +214,7 @@ func TestLoginUser(t *testing.T) {
 	assert.NotEmpty(t, loginResponse.Token)
 }
 
-func TestLoginUserWrongPassword(t *testing.T) {
+func TestUserRepository_LoginUser_WrongPassword(t *testing.T) {
 	t.Setenv(enums.SecretKey, "test-secret")
 
 	pool, err := pgxmock.NewPool()
@@ -236,7 +236,7 @@ func TestLoginUserWrongPassword(t *testing.T) {
 	assert.Nil(t, loginResponse)
 }
 
-func TestLoginUserNotFound(t *testing.T) {
+func TestUserRepository_LoginUser_NotFound(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
@@ -251,7 +251,7 @@ func TestLoginUserNotFound(t *testing.T) {
 	assert.Nil(t, loginResponse)
 }
 
-func TestLoginUserQueryError(t *testing.T) {
+func TestUserRepository_LoginUser_QueryError(t *testing.T) {
 	pool, err := pgxmock.NewPool()
 	require.NoError(t, err)
 	defer pool.Close()
